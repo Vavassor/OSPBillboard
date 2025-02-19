@@ -1,0 +1,25 @@
+{
+  "author": {
+    "email": "dawso.andrew@gmail.com",
+    "name": "Andrew Dawson",
+    "url": "https://vavassor.github.io/"
+  },
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.6"
+  },
+  "description": "Billboards",
+  "displayName": "OSP Billboard",
+  "keywords": [
+    "billboard",
+    "sprite"
+  ],
+  "license": "MIT",
+  "name": "com.orchidseal.billboard",
+  "unity": "2022.3",
+  "unityRelease": "6f1",
+  "url": "https://github.com/Vavassor/OspBillboard/releases/download/v0.1.0/com.orchidseal.billboard-0.1.0.zip",
+  "version": "0.1.0",
+  "vpmDependencies": {
+    "com.vrchat.worlds": ">=3.5.2 < 3.7.X"
+  }
+}
