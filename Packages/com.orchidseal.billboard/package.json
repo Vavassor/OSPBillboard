@@ -20,6 +20,6 @@
   "url": "https://github.com/Vavassor/OspBillboard/releases/download/v0.1.0/com.orchidseal.billboard-0.1.0.zip",
   "version": "0.1.0",
   "vpmDependencies": {
-    "com.vrchat.worlds": ">=3.5.2 < 3.7.X"
+    "com.vrchat.worlds": ">=3.5.2 < 3.9.X"
   }
 }

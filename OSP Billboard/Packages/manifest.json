@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.needle.upm-in-unitypackage": "0.6.3",
     "com.orchidseal.billboard": "file:../../Packages/com.orchidseal.billboard",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.rider": "3.0.26",
@@ -40,5 +41,14 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com/",
+      "scopes": [
+        "com.needle"
+      ]
+    }
+  ]
 }
