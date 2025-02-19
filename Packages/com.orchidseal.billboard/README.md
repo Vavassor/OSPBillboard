@@ -18,7 +18,7 @@ If you're creating content for VRChat, [get the package for VRChat Creator Compa
 
 ### Option 2 - Manual Install
 
-Download the [latest Unity Package](https://github.com/vavassor/OSP Billboard/releases/latest) and follow the directions for [importing local asset packages](https://docs.unity3d.com/2023.1/Documentation/Manual/AssetPackagesImport.html) into your Unity project.
+Download the [latest Unity Package](https://github.com/vavassor/OSPBillboard/releases/latest) and follow the directions for [importing local asset packages](https://docs.unity3d.com/2023.1/Documentation/Manual/AssetPackagesImport.html) into your Unity project.
 
 ## License
 
