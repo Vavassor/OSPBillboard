@@ -7,17 +7,14 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: LiberationSans SDF Waypoint
+  m_Name: LiberationSans SDF Billboard
   m_Shader: {fileID: 4800000, guid: e9ce28e02c40ec64a8dc9df3d4ac3839, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - DISTANCE_FADE_ON
-  - KEEP_CONSTANT_SCALING
   - _BILLBOARD_MODE_AUTO
   m_InvalidKeywords:
   - _BILLBOARDMODE_VERTICAL
-  - _KEEPCONSTANTSCALING_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -64,13 +61,13 @@ Material:
     - _BumpFace: 0
     - _BumpOutline: 0
     - _ColorMask: 15
-    - _ConstantScale: 0.18
+    - _ConstantScale: 0.25
     - _CullMode: 0
     - _Diffuse: 0.5
-    - _DistanceFadeMax: 5
-    - _DistanceFadeMaxAlpha: 1
-    - _DistanceFadeMin: 2
-    - _DistanceFadeMinAlpha: 0
+    - _DistanceFadeMax: 10
+    - _DistanceFadeMaxAlpha: 0
+    - _DistanceFadeMin: 0
+    - _DistanceFadeMinAlpha: 1
     - _FaceDilate: 0
     - _FaceUVSpeedX: 0
     - _FaceUVSpeedY: 0
@@ -79,14 +76,14 @@ Material:
     - _GlowOuter: 0.05
     - _GlowPower: 0.75
     - _GradientScale: 10
-    - _KeepConstantScaling: 1
+    - _KeepConstantScaling: 0
     - _LightAngle: 3.1416
     - _MaskSoftnessX: 0
     - _MaskSoftnessY: 0
     - _OutlineSoftness: 0
     - _OutlineUVSpeedX: 0
     - _OutlineUVSpeedY: 0
-    - _OutlineWidth: 0
+    - _OutlineWidth: 0.15
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 10
     - _ScaleRatioA: 0.9
@@ -115,7 +112,7 @@ Material:
     - _VertexOffsetY: 0
     - _WeightBold: 0.75
     - _WeightNormal: 0
-    - _ZTest: 8
+    - _ZTest: 4
     m_Colors:
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
     - _EnvMatrixRotation: {r: 0, g: 0, b: 0, a: 0}
