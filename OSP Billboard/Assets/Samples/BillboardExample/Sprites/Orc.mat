@@ -7,23 +7,21 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ANT2
+  m_Name: Orc
   m_Shader: {fileID: 4800000, guid: 3d40f65f368b6364e8349553a248f195, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - USE_ALPHA_TEST
   - USE_FLIPBOOK
   - USE_NON_UNIFORM_SCALE
-  - _BILLBOARD_MODE_AUTO
+  - _BILLBOARD_MODE_VERTICAL
   - _COLORMODE_MULTIPLY
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
-  stringTagMap:
-    RenderType: TransparentCutout
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -50,7 +48,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FlipbookTexArray:
-        m_Texture: {fileID: 18700000, guid: 6f158146ee1a60747bd63251d74d83ee, type: 2}
+        m_Texture: {fileID: 18700000, guid: c04e788b3e5af5848af86a3107a0a6e4, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -72,11 +70,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaCutoff: 0.5
-    - _AlphaToMask: 1
-    - _Billboard_Mode: 1
-    - _BlendDst: 0
+    - _AlphaToMask: 0
+    - _Billboard_Mode: 3
+    - _BlendDst: 10
     - _BlendOp: 0
-    - _BlendSrc: 1
+    - _BlendSrc: 5
     - _BumpScale: 1
     - _ColorMode: 0
     - _ConstantScale: 1
@@ -88,7 +86,7 @@ Material:
     - _DistanceFadeMinAlpha: 1
     - _DstBlend: 0
     - _FlipbookBlendMode: 0
-    - _FlipbookFramesPerSecond: 12
+    - _FlipbookFramesPerSecond: 30
     - _FlipbookManualFrame: 0
     - _FlipbookUseManualFrame: 0
     - _GlossMapScale: 1
@@ -99,7 +97,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _RenderMode: 1
+    - _RenderMode: 2
     - _RotationRoll: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -112,7 +110,7 @@ Material:
     - _StencilWriteMask: 255
     - _StencilZFail: 0
     - _UVSec: 0
-    - _UseAlphaTest: 1
+    - _UseAlphaTest: 0
     - _UseDistanceFade: 0
     - _UseFlipbook: 1
     - _UseFlipbookSmoothing: 0
