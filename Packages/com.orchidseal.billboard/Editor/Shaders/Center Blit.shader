@@ -28,14 +28,12 @@ Shader "Orchid Seal/OSP Billboard/Center Blit"
             {
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
-
-                float2 targetSize = _MainTex_TexelSize.xy;
-                targetSize.y = abs(targetSize.y);
+                
                 #if UNITY_UV_STARTS_AT_TOP
                 if (_MainTex_TexelSize.y < 0) v.texcoord.y = 1.0 - v.texcoord.y;
                 #endif
 
-                float2 scale = _TargetTexelSize.zw * targetSize;
+                float2 scale = _TargetTexelSize.zw * _MainTex_TexelSize.xy;
                 float2 offset = floor(0.5 * (_TargetTexelSize.zw - _MainTex_TexelSize.zw)) * _TargetTexelSize.xy;
                 o.uv = scale * (v.texcoord - offset);
                 

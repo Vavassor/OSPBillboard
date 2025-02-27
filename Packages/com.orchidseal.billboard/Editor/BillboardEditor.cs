@@ -151,6 +151,12 @@ namespace OrchidSeal.Billboard.Editor
                 var flipbookManualFrameProperty = FindProperty("_FlipbookManualFrame", properties);
 
                 materialEditor.ShaderProperty(isFlipbookEnabledProperty, isFlipbookEnabledLabel);
+                
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Create Flipbooks", GUILayout.Width(120)))
+                {
+                    FlipbookCreatorEditor.ShowWindow();
+                }
 
                 EditorGUI.BeginDisabledGroup(isFlipbookEnabledProperty.floatValue == 0.0f);
                 materialEditor.TexturePropertySingleLine(flipbookLabel, flipbookProperty, FindProperty("_FlipbookTint", properties));

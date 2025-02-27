@@ -17,7 +17,8 @@ Material:
   - USE_NON_UNIFORM_SCALE
   - _BILLBOARD_MODE_AUTO
   - _COLORMODE_MULTIPLY
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _ALPHATOMASK_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
