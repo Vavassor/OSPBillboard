@@ -1,4 +1,4 @@
-Shader "Orchid Seal/OSP Billboard/Contain Blit"
+Shader "Orchid Seal/OSP Billboard/Editor/Contain Blit"
 {
     Properties
     {

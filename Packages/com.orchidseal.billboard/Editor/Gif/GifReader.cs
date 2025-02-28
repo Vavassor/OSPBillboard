@@ -334,7 +334,7 @@ namespace OrchidSeal.Billboard.Gif
                             RepeatCount = ReadUInt16();
                             break;
                         // Buffering Application Extension
-                        // https://web.archive.org/web/20230203155325/http://www.vurdalakov.net/misc/gif/netscape-buffering-application-extension    
+                        // https://web.archive.org/web/20230203155325/http://www.vurdalakov.net/misc/gif/netscape-buffering-application-extension
                         // case 0x02: break;
                         default:
                             SeekRelative(blockSize - 1);

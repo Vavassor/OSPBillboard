@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ANT2
+  m_Name: Fairy
   m_Shader: {fileID: 4800000, guid: 3d40f65f368b6364e8349553a248f195, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -51,7 +51,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FlipbookTexArray:
-        m_Texture: {fileID: 18700000, guid: 6f158146ee1a60747bd63251d74d83ee, type: 2}
+        m_Texture: {fileID: 18700000, guid: 33dfc04fb8d4777468e75c949a722300, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -89,7 +89,7 @@ Material:
     - _DistanceFadeMinAlpha: 1
     - _DstBlend: 0
     - _FlipbookBlendMode: 0
-    - _FlipbookFramesPerSecond: 12
+    - _FlipbookFramesPerSecond: 10
     - _FlipbookManualFrame: 0
     - _FlipbookUseManualFrame: 0
     - _GlossMapScale: 1

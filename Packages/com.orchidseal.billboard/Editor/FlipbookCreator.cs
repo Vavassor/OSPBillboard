@@ -4,7 +4,6 @@ using OrchidSeal.Billboard.Gif;
 using UnityEditor;
 using UnityEngine;
 using Graphics = UnityEngine.Graphics;
-using Object = UnityEngine.Object;
 
 namespace OrchidSeal.Billboard.Editor
 {
@@ -27,8 +26,11 @@ namespace OrchidSeal.Billboard.Editor
         public TextureWrapMode wrapMode;
     }
     
-    public class FlipbookCreator
+    public static class FlipbookCreator
     {
+        private static readonly int Aspect = Shader.PropertyToID("_Aspect");
+        private static readonly int TargetTexelSize = Shader.PropertyToID("_TargetTexelSize");
+
         [MenuItem("Assets/Orchid Seal/Billboard - GIF to Texture Array")]
         private static void ConvertGifToTexture2DArray()
         {
@@ -49,15 +51,36 @@ namespace OrchidSeal.Billboard.Editor
             return Selection.assetGUIDs.All(guid => Path.GetExtension(AssetDatabase.GUIDToAssetPath(guid)).ToLowerInvariant() == ".gif");
         }
 
-        public static void CreateTextureArraysFromGifPaths(string[] paths, FlipbookSpec spec)
+        public static void CreateTextureArraysFromGifPaths(string[] paths, FlipbookSpec spec, string outputFolder = null)
         {
-            foreach (var path in paths)
+            for (var i = 0; i < paths.Length; i++)
             {
-                var texture2DArray = CreateTextureArrayFromGif(path, spec);
-                AssetDatabase.CreateAsset(texture2DArray, Path.ChangeExtension(path, ".asset"));
+                var assetName = Path.ChangeExtension(Path.GetFileName(paths[i]), ".asset");
+                if (EditorUtility.DisplayCancelableProgressBar("Create Flipbook", assetName, i / (float)paths.Length))
+                {
+                    break;
+                }
+
+                try
+                {
+                    var texture2DArray = CreateTextureArrayFromGif(paths[i], spec);
+                    // TODO: This overwrites the files. Should we have an option to not overwrite 
+                    // and use something like AssetDatabase.GenerateUniqueAssetPath to generate
+                    // a unique filename?
+                    var outputPath = string.IsNullOrEmpty(outputFolder) ?
+                        Path.ChangeExtension(paths[i], ".asset") :
+                        Path.Combine(outputFolder, assetName);
+                    AssetDatabase.CreateAsset(texture2DArray, outputPath);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogException(e);
+                    break;
+                }
             }
             
             AssetDatabase.SaveAssets();
+            EditorUtility.ClearProgressBar();
         }
 
         private static TextureFormat ChooseFormat(bool hasAlpha, int width, int height)
@@ -72,6 +95,9 @@ namespace OrchidSeal.Billboard.Editor
 
         private static Texture2DArray CreateTextureArrayFromGif(string path, FlipbookSpec spec)
         {
+            // Async note: Unfortunately Texture2DArray and Texture2D can only be created from the main thread. So
+            // for now this is all synchronous!
+            
             using var image = GifReader.FromFile(path);
             var frameCount = image.FrameCount;
 
@@ -98,17 +124,16 @@ namespace OrchidSeal.Billboard.Editor
                 }
                 case ResizeMode.Center:
                 {
-                    var blitMaterial = new Material(Shader.Find("Orchid Seal/OSP Billboard/Center Blit"));
+                    var blitMaterial = new Material(Shader.Find("Orchid Seal/OSP Billboard/Editor/Center Blit"));
                     var width = Mathf.NextPowerOfTwo(image.Width);
                     var height = Mathf.NextPowerOfTwo(image.Height);
-                    Debug.Log($"w {width} h {height} iw {image.Width} ih {image.Height}");
-                    blitMaterial.SetVector("_TargetTexelSize", new Vector4(1.0f / width, 1.0f / height, width, height));
+                    blitMaterial.SetVector(TargetTexelSize, new Vector4(1.0f / width, 1.0f / height, width, height));
                     return CreateScaledFrames(image, spec, blitMaterial, true);
                 }
                 case ResizeMode.Contain:
                 {
-                    var blitMaterial = new Material(Shader.Find("Orchid Seal/OSP Billboard/Contain Blit"));
-                    blitMaterial.SetFloat("_Aspect", image.Width / (float) image.Height);
+                    var blitMaterial = new Material(Shader.Find("Orchid Seal/OSP Billboard/Editor/Contain Blit"));
+                    blitMaterial.SetFloat(Aspect, image.Width / (float) image.Height);
                     return CreateScaledFrames(image, spec, blitMaterial, true);
                 }
                 case ResizeMode.Stretch:

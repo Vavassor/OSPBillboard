@@ -90,8 +90,7 @@ namespace OrchidSeal.Billboard.Editor
                 }
 
                 var blendMode = (RenderMode)renderModeProperty.floatValue;
-
-
+                
                 switch (blendMode)
                 {
                     case RenderMode.Custom:
