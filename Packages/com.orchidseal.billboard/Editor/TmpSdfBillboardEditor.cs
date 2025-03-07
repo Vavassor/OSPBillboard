@@ -7,6 +7,15 @@ namespace OrchidSeal.Billboard.Editor
 {
     public class TmpSdfBillboardEditor : ShaderGUI
     {
+        private static class Styles
+        {
+            public static GUIStyle sectionVerticalLayout = new(EditorStyles.helpBox)
+            {
+                margin = new RectOffset(0, 0, 0, 20),
+                padding = new RectOffset(8, 8, 8, 8),
+            };
+        }
+        
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMaterial = materialEditor.target as Material;
@@ -19,34 +28,6 @@ namespace OrchidSeal.Billboard.Editor
             DistanceFadeOptions(materialEditor, properties, targetMaterial);
             SilhouetteOptions(materialEditor, properties, targetMaterial);
             DebugOptions(materialEditor, properties, targetMaterial);
-        }
-
-        private static void Vector3Property(MaterialProperty property, GUIContent name)
-        {
-            EditorGUI.BeginChangeCheck();
-            var vector3 = EditorGUILayout.Vector3Field(name, new Vector3(property.vectorValue.x, property.vectorValue.y, property.vectorValue.z), null);
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.vectorValue = new Vector4(vector3.x, vector3.y, vector3.z, property.vectorValue.w);
-            }
-        }
-
-        private static void Vector4Property(MaterialProperty property, GUIContent name, string[] labels)
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PrefixLabel(name);
-            EditorGUI.BeginChangeCheck();
-            EditorGUIUtility.labelWidth = 12;
-            var x = EditorGUILayout.FloatField(labels[0], property.vectorValue.x);
-            var y = EditorGUILayout.FloatField(labels[1], property.vectorValue.y);
-            var z = EditorGUILayout.FloatField(labels[2], property.vectorValue.z);
-            var w = EditorGUILayout.FloatField(labels[3], property.vectorValue.w);
-            EditorGUIUtility.labelWidth = 0;
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.vectorValue = new Vector4(x, y, z, w);
-            }
-            EditorGUILayout.EndHorizontal();
         }
 
         private static void OptionalProperty(MaterialEditor materialEditor, MaterialProperty[] properties, string name, GUIContent label)
@@ -117,10 +98,13 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showFaceOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 materialEditor.ShaderProperty(FindProperty("_FaceColor", properties), faceColorLabel);
                 OptionalProperty(materialEditor, properties, "_FaceSoftness", faceSoftnessLabel);
                 materialEditor.ShaderProperty(FindProperty("_FaceDilate", properties), faceDilationLabel);
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -142,12 +126,15 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showOutlineOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 materialEditor.ShaderProperty(FindProperty("_OutlineTex", properties), outlineTextureLabel);
                 materialEditor.ShaderProperty(FindProperty("_OutlineUVSpeedX", properties), outlineUvSpeedXLabel);
                 materialEditor.ShaderProperty(FindProperty("_OutlineUVSpeedY", properties), outlineUvSpeedYLabel);
                 materialEditor.ShaderProperty(FindProperty("_OutlineColor", properties), outlineColorLabel);
                 materialEditor.ShaderProperty(FindProperty("_OutlineWidth", properties), outlineWidthLabel);
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -178,6 +165,8 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showUnderlayOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 KeywordMultiToggle(material, underlayTypeKeywords, underlayEnabledLabel, underlayTypeKeywords[1]);
                 EditorGUI.BeginDisabledGroup(!(material.IsKeywordEnabled("UNDERLAY_ON") || material.IsKeywordEnabled("UNDERLAY_INNER")));
                 EnumKeywordProperty(material, underlayTypeLabel, underlayTypeKeywords, underlayTypeLabels);
@@ -187,7 +176,8 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_UnderlayDilate", properties), underlayDilationLabel);
                 materialEditor.ShaderProperty(FindProperty("_UnderlaySoftness", properties), underlaySoftnessLabel);
                 EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -205,6 +195,7 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showLightingOptions)
             {
+                // EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.Space(10, false);
                 EditorGUILayout.BeginVertical();
@@ -216,7 +207,7 @@ namespace OrchidSeal.Billboard.Editor
                 ReflectionOptions(materialEditor, properties, isDisabled);
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
-                GUILayout.Space(20);
+                // EditorGUILayout.EndVertical();
             }
         }
 
@@ -326,7 +317,7 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_ReflectFaceColor", properties), reflectionFaceLabel);
                 materialEditor.ShaderProperty(FindProperty("_ReflectOutlineColor", properties), reflectionOutlineLabel);
                 materialEditor.ShaderProperty(FindProperty("_Cube", properties), reflectionMapLabel);
-                Vector3Property(FindProperty("_EnvMatrixRotation", properties), reflectionRotationLabel);
+                ShaderGuiUtility.Vector3Property(FindProperty("_EnvMatrixRotation", properties), reflectionRotationLabel);
                 EditorGUI.EndDisabledGroup();
                 GUILayout.Space(20);
             }
@@ -351,6 +342,8 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showGlowOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 var isOn = KeywordToggle(material, "GLOW_ON", glowEnabledLabel);
                 EditorGUI.BeginDisabledGroup(!isOn);
                 materialEditor.ShaderProperty(FindProperty("_GlowColor", properties), glowColorLabel);
@@ -360,7 +353,8 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_GlowPower", properties), glowPowerLabel);
 
                 EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -380,12 +374,15 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showBillboardOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 materialEditor.ShaderProperty(FindProperty("_Billboard_Mode", properties), billboardModeLabel);
                 materialEditor.ShaderProperty(FindProperty("_KeepConstantScaling", properties), keepConstantScaleLabel);
                 EditorGUI.BeginDisabledGroup(material.GetFloat("_KeepConstantScaling") == 0.0f);
                 materialEditor.ShaderProperty(FindProperty("_ConstantScale", properties), constantScaleLabel);
                 EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -407,6 +404,8 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showDistanceFadeOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 var isOn = KeywordToggle(material, "DISTANCE_FADE_ON", distanceFadeEnabledLabel);
                 EditorGUI.BeginDisabledGroup(!isOn);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMinAlpha", properties), distanceFadeMinAlphaLabel);
@@ -414,7 +413,8 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), distanceFadeMinLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMax", properties), distanceFadeMaxLabel);
                 EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -433,6 +433,8 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showSilhouetteOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 var wasOn = material.IsKeywordEnabled("SILHOUETTE_FADING_ON");
                 var isOn = KeywordToggle(material, "SILHOUETTE_FADING_ON", silhouetteEnabledLabel);
                 if (wasOn != isOn)
@@ -443,7 +445,8 @@ namespace OrchidSeal.Billboard.Editor
                 EditorGUI.BeginDisabledGroup(!isOn);
                 materialEditor.ShaderProperty(FindProperty("_SilhouetteFadeAlpha", properties), silhouetteFadeAlphaLabel);
                 EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();
@@ -487,6 +490,8 @@ namespace OrchidSeal.Billboard.Editor
 
             if (showDebugOptions)
             {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
                 materialEditor.ShaderProperty(FindProperty("_MainTex", properties), fontAtlasLabel);
                 materialEditor.ShaderProperty(FindProperty("_TextureWidth", properties), textureWidthLabel);
                 materialEditor.ShaderProperty(FindProperty("_TextureHeight", properties), textureHeightLabel);
@@ -507,7 +512,7 @@ namespace OrchidSeal.Billboard.Editor
                     EditorGUILayout.Space();
                 }
                 EditorGUIUtility.labelWidth = 150;
-                Vector4Property(FindProperty("_ClipRect", properties), clipRectLabel, clipRectComponentLabels);
+                ShaderGuiUtility.Vector4Property(FindProperty("_ClipRect", properties), clipRectLabel, clipRectComponentLabels);
                 EditorGUIUtility.labelWidth = 0;
                 EditorGUILayout.Space();
 
@@ -527,7 +532,8 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_ScaleRatioB", properties), scaleRatioBLabel);
                 materialEditor.ShaderProperty(FindProperty("_ScaleRatioC", properties), scaleRatioCLabel);
                 EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
+                
+                EditorGUILayout.EndVertical();
             }
 
             EditorGUILayout.EndFoldoutHeaderGroup();

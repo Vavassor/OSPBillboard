@@ -11,11 +11,12 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         _MainTex("Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1, 1, 1, 1)
         [KeywordEnum(Multiply, Overlay)] _ColorMode("Tint Color Mode", Float) = 0
-        [HideInInspector] [Enum(Opaque,0,Cutout,1,Transparent,2,Custom,3)] _RenderMode("Render Mode", Int) = 2
+        [HideInInspector] [Enum(Opaque,0,Cutout,1,Transparent,2,Premultiply,3,Additive,4,Custom,5)] _RenderMode("Render Mode", Int) = 2
         [Toggle(USE_GAMMA_COLORSPACE)] _UseGammaSpace("Use Gamma Space Blending", Float) = 0
         
         // Makes the billboard appear grounded, and prevents it from tilting side to side when in VR.
-        [KeywordEnum(None, Auto, View, Vertical)] _Billboard_Mode("Billboard Mode", Float) = 1
+        [KeywordEnum(None, Auto, Camera, World_Y, Local_Y)] _Billboard_Mode("Billboard Mode", Float) = 1
+        _Position("Position (XY)", Vector) = (0, 0, 0, 0)
         _RotationRoll("Rotation", Float) = 0
         _Scale("Scale (XY)", Vector) = (1, 1, 0, 0)
         [Toggle(USE_NON_UNIFORM_SCALE)] _UseNonUniformScale("Use Non-Uniform Object Scale", Float) = 1
@@ -97,15 +98,16 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             #pragma shader_feature_local USE_FLIPBOOK
             #pragma shader_feature_local USE_FLIPBOOK_SMOOTHING
             #pragma shader_feature_local USE_ALPHA_TEST
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_VIEW _BILLBOARD_MODE_VERTICAL
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_CAMERA _BILLBOARD_MODE_WORLD_Y _BILLBOARD_MODE_LOCAL_Y
             #pragma shader_feature_local USE_NON_UNIFORM_SCALE
             #pragma shader_feature_local KEEP_CONSTANT_SCALING
             #pragma shader_feature_local USE_DISTANCE_FADE
 
             #include "UnityCG.cginc"
+            #include "Billboard Common.cginc"
 
             #define DEGREES_TO_RADIANS 0.0174532925
-            #define VERTICAL_BILLBOARD _BILLBOARD_MODE_AUTO && defined(USING_STEREO_MATRICES) || _BILLBOARD_MODE_VERTICAL
+            #define VERTICAL_BILLBOARD _BILLBOARD_MODE_AUTO && defined(USING_STEREO_MATRICES) || _BILLBOARD_MODE_WORLD_Y
 
             // Blending.....................................................................
 
@@ -146,23 +148,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 }
             }
 
-            // Flipbooks....................................................................
-
-            // The index in the z component of the result is non-integral so that the
-            // fractional part can be used for smoothing, if that's enabled.
-            float4 GetFlipbookTexcoord(Texture2DArray flipbook, float2 texcoord, float framesPerSecond, float useManualFrame, int manualFrame)
-            {
-                float width, height;
-                uint elementCount;
-                flipbook.GetDimensions(width, height, elementCount);
-                float frame = _Time.y * framesPerSecond / elementCount;
-                uint index = frac(frame) * elementCount;
-                index = lerp(index, manualFrame, useManualFrame);
-                uint nextIndex = (index + 1) % elementCount;
-                float4 flipbookTexcoord = float4(texcoord, index + frac(frame), nextIndex);
-                return flipbookTexcoord;
-            }
-
             // Color Spaces.................................................................
 
             #if defined(UNITY_COLORSPACE_GAMMA) || !defined(USE_GAMMA_COLORSPACE)
@@ -176,29 +161,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             #else
             #define FROM_SHADING_COLOR_SPACE(col) LinearToGammaSpace(col)
             #endif
-
-            // Fog..........................................................................
-
-            #define USING_FOG (defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2))
-
-            // This transfers fog using radial distance so that it works in mirrors.
-            fixed TransferFog(float4 clipPosition)
-            {
-                float3 viewPosition = UnityObjectToViewPos(clipPosition);
-                float fogCoord = length(viewPosition.xyz);
-                UNITY_CALC_FOG_FACTOR_RAW(fogCoord);
-                return saturate(unityFogFactor);
-            }
-
-            #if USING_FOG
-            #define OSP_APPLY_FOG(col, input) col.rgb = lerp(unity_FogColor.rgb, col.rgb, input.fog);
-            #define OSP_FOG_COORDS(texcoordNumber) fixed fog : TEXCOORD##texcoordNumber;
-            #define OSP_TRANSFER_FOG(clipPosition, output) output.fog = TransferFog(clipPosition);
-            #else
-            #define OSP_APPLY_FOG(col, input)
-            #define OSP_FOG_COORDS(texcoordNumber)
-            #define OSP_TRANSFER_FOG(clipPosition, output)
-            #endif // USING_FOG
 
             // Inputs.......................................................................
             
@@ -216,7 +178,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #ifdef USE_DISTANCE_FADE
                     float distanceFade :TEXCOORD2;
                 #endif
-                UNITY_FOG_COORDS(3)
+                OSP_FOG_COORDS(3)
                 float4 pos : SV_POSITION;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -226,6 +188,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             float4 _Color;
 
             // Transformation
+            float2 _Position;
             float _RotationRoll;
             float2 _Scale;
             float _ConstantScale;
@@ -322,7 +285,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
 
                 float3 positionOs = float3(_Scale, 1) * v.vertex.xyz;
 
-                #if KEEP_CONSTANT_SCALING || VERTICAL_BILLBOARD || USE_DISTANCE_FADE
+                #if KEEP_CONSTANT_SCALING || VERTICAL_BILLBOARD || _BILLBOARD_MODE_LOCAL_Y || USE_DISTANCE_FADE
                     float3 cameraPositionWs = GetCenterCameraPosition();
                     float3 objectCenterWs;
                     objectCenterWs.x = unity_ObjectToWorld[0][3];
@@ -330,6 +293,16 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                     objectCenterWs.z = unity_ObjectToWorld[2][3];
                     float3 viewDirectionWs = objectCenterWs - cameraPositionWs;
                     float distanceWs = length(viewDirectionWs);
+                #endif
+
+                #if _BILLBOARD_MODE_LOCAL_Y
+                    float4 upAxis;
+                    upAxis.x = unity_ObjectToWorld[0][1];
+                    upAxis.y = unity_ObjectToWorld[1][1];
+                    upAxis.z = unity_ObjectToWorld[2][1];
+                    upAxis.w = 0;
+                #elif VERTICAL_BILLBOARD
+                    float4 upAxis = float4(0, 1, 0, 0);
                 #endif
 
                 #if KEEP_CONSTANT_SCALING
@@ -345,15 +318,16 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 positionOs.xy = Rotate2D(positionOs.xy, DEGREES_TO_RADIANS * _RotationRoll);
                 // TODO: Getting rotation from the model matrix breaks when parent objects are rotated/scaled.
                 // positionOs.xy = Rotate2D(positionOs.xy, GetRoll(unity_ObjectToWorld, objectScale));
+                positionOs.xy += _Position;
 
                 #if _BILLBOARD_MODE_NONE
                     o.pos = UnityObjectToClipPos(v.vertex);
-                #elif VERTICAL_BILLBOARD
+                #elif VERTICAL_BILLBOARD || _BILLBOARD_MODE_LOCAL_Y
                     if (IsInMirror())
                     {
                         viewDirectionWs = mul((float3x3) unity_WorldToObject, unity_CameraWorldClipPlanes[5].xyz);
                     }
-                    float3 positionWs = mul(LookAtMatrix(-viewDirectionWs, float4(0, 1, 0, 0)), positionOs) + objectCenterWs.xyz;
+                    float3 positionWs = mul(LookAtMatrix(-viewDirectionWs, upAxis), positionOs) + objectCenterWs.xyz;
                     o.pos =  mul(UNITY_MATRIX_VP, float4(positionWs, 1.0));
                 #else
                     float4 positionVs = mul(UNITY_MATRIX_MV, float4(0, 0, 0, 1)) + float4(positionOs.xy, 0, 0);
@@ -372,7 +346,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 o.distanceFade = lerp(_DistanceFadeMinAlpha, _DistanceFadeMaxAlpha, smoothstep(_DistanceFadeMin, _DistanceFadeMax, distanceWs));
                 #endif
 
-                UNITY_TRANSFER_FOG(o,o.pos);
+                OSP_TRANSFER_FOG(o,o.pos);
 
                 return o;
             }
@@ -413,7 +387,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
 
                 col.rgb = FROM_SHADING_COLOR_SPACE(col.rgb);
 
-                UNITY_APPLY_FOG(i.fogCoord, col);
+                OSP_APPLY_FOG(i.fogCoord, col);
                 return col;
             }
             ENDCG
