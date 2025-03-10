@@ -43,13 +43,21 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent glossinessLabel = new("Glossiness");
             public static readonly GUIContent metallicLabel = new("Metallic");
             
+            // Emission option labels
+            public const string emissionFoldoutLabel = "Emission";
+            public static readonly GUIContent emissionMapLabel = new("Emission");
+            
             // Transformation option labels
             public const string transformationFoldoutLabel = "Transformation";
-            public static readonly GUIContent billboardModeLabel = new("Billboard Mode");
+            public static readonly GUIContent billboardModeLabel = new("Billboard Mode", "None:\nNo billboarding.\n\nSpherical:\nFace the camera from any direction.\n\nCylindrical World:\nFace the camera, turning around the world Y axis. Use to appear grounded or upright, like for trees or fire.\n\nCylindrical Local\nFace the camera, turning around the object Y axis.");
         }
+        
+        private static readonly int BumpMap = Shader.PropertyToID("_BumpMap");
+        private static readonly int EmissionMap = Shader.PropertyToID("_EmissionMap");
 
         private bool showBaseOptions = true;
         private bool showBlendingOptions = true;
+        private bool showEmissionOptions;
         private bool showTransformationOptions = true;
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -58,6 +66,7 @@ namespace OrchidSeal.Billboard.Editor
             
             BlendingOptions(materialEditor, properties, targetMaterial);
             BaseOptions(materialEditor, properties, targetMaterial);
+            EmissionOptions(materialEditor, properties, targetMaterial);
             TransformationOptions(materialEditor, properties);
             
             materialEditor.EnableInstancingField();
@@ -212,6 +221,18 @@ namespace OrchidSeal.Billboard.Editor
             }
         }
 
+        private static void SetKeyword(Material material, string keyword, bool isOn)
+        {
+            if (isOn)
+            {
+                material.EnableKeyword(keyword);
+            }
+            else
+            {
+                material.DisableKeyword(keyword);
+            }
+        }
+
         private void BaseOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
         {
             showBaseOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showBaseOptions, Styles.baseFoldoutLabel);
@@ -229,14 +250,7 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.TexturePropertySingleLine(Styles.normalMapLabel, FindProperty("_BumpMap", properties), FindProperty("_BumpScale", properties));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    if (targetMaterial.GetTexture("_BumpMap"))
-                    {
-                        targetMaterial.EnableKeyword("USE_NORMAL_MAP");
-                    }
-                    else
-                    {
-                        targetMaterial.DisableKeyword("USE_NORMAL_MAP");
-                    }
+                    SetKeyword(targetMaterial, "USE_NORMAL_MAP", targetMaterial.GetTexture(BumpMap));
                 }
                 
                 materialEditor.TextureScaleOffsetProperty(baseTextureProperty);
@@ -244,6 +258,27 @@ namespace OrchidSeal.Billboard.Editor
                 EditorGUILayout.EndVertical();
             }
             
+            EditorGUILayout.EndFoldoutHeaderGroup();
+        }
+        
+        private void EmissionOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
+        {
+            showEmissionOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showEmissionOptions, Styles.emissionFoldoutLabel);
+
+            if (showEmissionOptions)
+            {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
+                EditorGUI.BeginChangeCheck();
+                materialEditor.TexturePropertySingleLine(Styles.emissionMapLabel, FindProperty("_EmissionMap", properties), FindProperty("_EmissionColor", properties));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    SetKeyword(targetMaterial, "USE_EMISSION_MAP", targetMaterial.GetTexture(EmissionMap));
+                }
+                
+                EditorGUILayout.EndVertical();
+            }
+
             EditorGUILayout.EndFoldoutHeaderGroup();
         }
         

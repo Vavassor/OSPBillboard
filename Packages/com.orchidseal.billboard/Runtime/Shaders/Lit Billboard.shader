@@ -13,10 +13,13 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
         _AlphaCutoff("Alpha Cutoff", Float) = 0.5
         [Toggle] _AlphaToMask("Alpha To Mask", Float) = 0
         
-        [KeywordEnum(None, Auto, Camera, World_Y, Local_Y)] _Billboard_Mode("Billboard Mode", Float) = 1
+        [KeywordEnum(None, Spherical, Cylindrical_World, Cylindrical_Local)] _Billboard_Mode("Billboard Mode", Float) = 1
         
         _BumpScale("Scale", Float) = 1.0
         [NoScaleOffset] [Normal] _BumpMap("Normal Map", 2D) = "bump" {}
+        
+        [HDR] _EmissionColor("Emission Color", Color) = (1, 1, 1, 1)
+        _EmissionMap("Emission Map", 2D) = "black" {}
         
         [Enum(UnityEngine.Rendering.BlendMode)] _BlendSrc("Source Blend", Float) = 5 //"SrcAlpha"
         [Enum(UnityEngine.Rendering.BlendMode)] _BlendDst("Destination Blend", Float) = 10 //"OneMinusSrcAlpha"
@@ -76,11 +79,11 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
 
             #pragma shader_feature_local USE_ALPHA_TEST
             #pragma shader_feature_local CAST_TRANSPARENT_SHADOWS
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_CAMERA _BILLBOARD_MODE_WORLD_Y _BILLBOARD_MODE_LOCAL_Y
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
             #pragma multi_compile_shadowcaster
             #pragma multi_compile_instancing
-            #pragma vertex vertParticleShadowCaster
-            #pragma fragment fragParticleShadowCaster
+            #pragma vertex vertShadowCaster
+            #pragma fragment fragShadowCaster
 
             #include "UnityCG.cginc"
             #include "OSP Billboard.cginc"
@@ -115,16 +118,16 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
                 fixed alpha : TEXCOORD2;
             };
 
-            void vertParticleShadowCaster(VertexInputShadowCaster v, out VertexOutputShadowCaster o, out float4 opos: SV_POSITION)
+            void vertShadowCaster(VertexInputShadowCaster v, out VertexOutputShadowCaster o, out float4 opos: SV_POSITION)
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-                v.vertex = mul(unity_WorldToObject, BillboardWs(v.vertex));
+                v.vertex = mul(unity_WorldToObject, float4(BillboardWs(v.vertex), 1));
                 o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
                 o.alpha = v.color.a;
                 TRANSFER_SHADOW_CASTER_NOPOS(o,opos);
             }
 
-            half4 fragParticleShadowCaster(
+            half4 fragShadowCaster(
                 VertexOutputShadowCaster i
                 #if defined(UNITY_STANDARD_USE_DITHER_MASK)
                     , UNITY_VPOS_TYPE vpos : VPOS
@@ -163,7 +166,8 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             
             #pragma shader_feature_local USE_ALPHA_TEST
             #pragma shader_feature_local USE_NORMAL_MAP
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_CAMERA _BILLBOARD_MODE_WORLD_Y _BILLBOARD_MODE_LOCAL_Y
+            #pragma shader_feature_local USE_EMISSION_MAP
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
             
             #pragma vertex VertexForwardBase
             #pragma fragment FragmentForwardBase
@@ -188,7 +192,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
 
             #pragma shader_feature_local USE_ALPHA_TEST
             #pragma shader_feature_local USE_NORMAL_MAP
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_CAMERA _BILLBOARD_MODE_WORLD_Y _BILLBOARD_MODE_LOCAL_Y
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
             
             #pragma vertex VertexForwardAdd
             #pragma fragment FragmentForwardAdd

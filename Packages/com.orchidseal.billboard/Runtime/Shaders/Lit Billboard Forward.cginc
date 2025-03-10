@@ -56,7 +56,7 @@ struct VertexOutputBase
 {
     float4 positionCs : SV_POSITION;
     float2 uv0 : TEXCOORD0;
-    float4 positionWs : TEXCOORD1;
+    float3 positionWs : TEXCOORD1;
     float3 viewDirectionWs : TEXCOORD2;
     float4 tangentToWorldAndPackedData[3] : TEXCOORD3; // [3x3:tangentToWorld]
     half4 ambientColor : TEXCOORD6;
@@ -70,7 +70,7 @@ struct VertexOutputAdd
 {
     float4 positionCs : SV_POSITION;
     float2 uv0 : TEXCOORD0;
-    float4 positionWs : TEXCOORD1;
+    float3 positionWs : TEXCOORD1;
     float3 viewDirectionWs : TEXCOORD2;
     float4 tangentToWorldAndLightDir[3] : TEXCOORD3; // [3x3:tangentToWorld | 1x3:lightDir]
     OSP_SHADOW_COORDS(6)
@@ -88,6 +88,9 @@ UNITY_DECLARE_TEX2D(_BumpMap);
 float4 _BumpMap_ST;
 half _BumpScale;
 
+UNITY_DECLARE_TEX2D(_EmissionMap);
+half3 _EmissionColor;
+
 // Alpha Test
 float _AlphaCutoff;
 
@@ -99,18 +102,22 @@ VertexOutputBase VertexForwardBase(VertexInput v)
     UNITY_INITIALIZE_OUTPUT(VertexOutputBase, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-    float4 positionWs = BillboardWs(v.vertex);
+    float3 normalWs;
+    float3 positionWs;
+    #ifdef USE_NORMAL_MAP
+    float3 tangentWs;
+    BillboardWithNormalTangentWs(v.vertex, v.normal, v.tangent, positionWs, normalWs, tangentWs);
+    #else
+    BillboardWithNormalWs(v.vertex, v.normal, positionWs, normalWs);
+    #endif // USE_NORMAL_MAP
 
-    o.positionCs = UnityWorldToClipPos(positionWs);
+    o.positionCs = UnityWorldToClipPos(float4(positionWs, 1));
     o.uv0 = TRANSFORM_TEX(v.uv0, _MainTex);
     o.positionWs = positionWs;
-    o.viewDirectionWs.xyz = normalize(positionWs.xyz - _WorldSpaceCameraPos);
-
-    float4 normalWs = normalize(BillboardWs(float4(v.normal, 0)));
+    o.viewDirectionWs.xyz = positionWs.xyz - _WorldSpaceCameraPos;
 
     #ifdef USE_NORMAL_MAP
-    float4 tangentWorld = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
-    float3x3 tangentToWorld = CreateTangentToWorldPerVertex(normalWs, tangentWorld.xyz, tangentWorld.w);
+    float3x3 tangentToWorld = CreateTangentToWorldPerVertex(normalWs.xyz, tangentWs, v.tangent.w);
     o.tangentToWorldAndPackedData[0].xyz = tangentToWorld[0];
     o.tangentToWorldAndPackedData[1].xyz = tangentToWorld[1];
     o.tangentToWorldAndPackedData[2].xyz = tangentToWorld[2];
@@ -141,7 +148,8 @@ fixed4 FragmentForwardBase(VertexOutputBase i) : SV_Target
 {
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
-    float3 positionWs = i.positionWs.xyz / i.positionWs.w;
+    float3 positionWs = i.positionWs.xyz;
+    float3 viewDirectionWs = -normalize(i.viewDirectionWs.xyz);
 
     #if USE_NORMAL_MAP
     half3 tangent = i.tangentToWorldAndPackedData[0].xyz;
@@ -171,12 +179,15 @@ fixed4 FragmentForwardBase(VertexOutputBase i) : SV_Target
     indirectLight.diffuse = ShadeSHPerPixel(normalWs, i.ambientColor, positionWs);
     
     // Only uses the nearest reflection probe.
-    Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(smoothness, -i.viewDirectionWs, normalWs, lerp(unity_ColorSpaceDielectricSpec.rgb, albedo, _Metallic));
+    Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(smoothness, viewDirectionWs, normalWs, specularColor);
     indirectLight.specular = Unity_GlossyEnvironment(UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, g);
     
-    fixed4 color = UNITY_BRDF_PBS(diffuseColor, specularColor, oneMinusReflectivity, smoothness, normalWs, -i.viewDirectionWs, mainLight, indirectLight);
-    // TODO: Add emission.
+    fixed4 color = UNITY_BRDF_PBS(diffuseColor, specularColor, oneMinusReflectivity, smoothness, normalWs, viewDirectionWs, mainLight, indirectLight);
     color.a = baseColor.a;
+
+    #ifdef USE_EMISSION_MAP
+    color.rgb += UNITY_SAMPLE_TEX2D(_EmissionMap, i.uv0).rgb * _EmissionColor.rgb;
+    #endif // USE_EMISSION_MAP
 
     #ifdef USE_ALPHA_TEST
     clip(color.a - _AlphaCutoff);
@@ -195,14 +206,19 @@ VertexOutputAdd VertexForwardAdd(VertexInput v)
     UNITY_INITIALIZE_OUTPUT(VertexOutputAdd, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-    float4 positionWs = BillboardWs(v.vertex);
+    float3 normalWs;
+    float3 positionWs;
+    #ifdef USE_NORMAL_MAP
+    float3 tangentWs;
+    BillboardWithNormalTangentWs(v.vertex, v.normal, v.tangent, positionWs, normalWs, tangentWs);
+    #else
+    BillboardWithNormalWs(v.vertex, v.normal, positionWs, normalWs);
+    #endif // USE_NORMAL_MAP
 
     o.positionCs = UnityWorldToClipPos(positionWs);
     o.uv0 = TRANSFORM_TEX(v.uv0, _MainTex);
     o.positionWs = positionWs;
-    o.viewDirectionWs.xyz = normalize(positionWs.xyz - _WorldSpaceCameraPos);
-
-    float3 normalWs = BillboardWs(float4(v.normal, 0));
+    o.viewDirectionWs.xyz = positionWs.xyz - _WorldSpaceCameraPos;
 
     #ifdef USE_NORMAL_MAP
     float4 tangentWorld = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
@@ -233,7 +249,8 @@ fixed4 FragmentForwardAdd(VertexOutputAdd i) : SV_Target
 {
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
-    float3 positionWs = i.positionWs.xyz / i.positionWs.w;
+    float3 positionWs = i.positionWs.xyz;
+    float3 viewDirectionWs = -normalize(i.viewDirectionWs);
 
     #if USE_NORMAL_MAP
     half3 tangent = i.tangentToWorldAndLightDir[0].xyz;
@@ -266,8 +283,7 @@ fixed4 FragmentForwardAdd(VertexOutputAdd i) : SV_Target
     indirectLight.diffuse = 0;
     indirectLight.specular = 0;
 
-    fixed4 color = UNITY_BRDF_PBS(diffuseColor, specularColor, oneMinusReflectivity, smoothness, normalWs, -i.viewDirectionWs, mainLight, indirectLight);
-    // TODO: Add emission.
+    fixed4 color = UNITY_BRDF_PBS(diffuseColor, specularColor, oneMinusReflectivity, smoothness, normalWs, viewDirectionWs, mainLight, indirectLight);
     color.a = baseColor.a;
 
     #ifdef USE_ALPHA_TEST
