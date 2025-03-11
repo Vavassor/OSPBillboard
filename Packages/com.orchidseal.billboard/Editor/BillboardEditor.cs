@@ -22,6 +22,8 @@ namespace OrchidSeal.Billboard.Editor
                 margin = new RectOffset(0, 0, 0, 20),
                 padding = new RectOffset(8, 8, 8, 8),
             };
+            
+            public static readonly GUIContent usePixelSharpenLabel = new("Sharp Pixels", "Blocky pixels with smooth edges. Set filtering on textures to Bilinear or Trilinear when using this.");
         }
 
         private bool showBlendingOptions = true;
@@ -123,6 +125,7 @@ namespace OrchidSeal.Billboard.Editor
                 EditorGUILayout.Space(8);
                 materialEditor.RenderQueueField();
                 materialEditor.ShaderProperty(FindProperty("_UseGammaSpace", properties), useGammaSpaceLabel);
+                materialEditor.ShaderProperty(FindProperty("_UsePixelSharpen", properties), Styles.usePixelSharpenLabel);
 
                 EditorGUILayout.EndVertical();
             }

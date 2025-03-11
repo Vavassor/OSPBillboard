@@ -14,9 +14,10 @@ Material:
   m_ValidKeywords:
   - DISTANCE_FADE_ON
   - KEEP_CONSTANT_SCALING
-  - _BILLBOARD_MODE_AUTO
+  - _BILLBOARD_MODE_SPHERICAL
   m_InvalidKeywords:
   - _BILLBOARDMODE_VERTICAL
+  - _BILLBOARD_MODE_AUTO
   - _KEEPCONSTANTSCALING_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

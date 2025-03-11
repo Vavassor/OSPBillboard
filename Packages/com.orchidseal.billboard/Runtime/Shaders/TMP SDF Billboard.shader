@@ -97,7 +97,7 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
         [Enum(UnityEngine.Rendering.CullMode)] _CullMode("Cull Mode", Float) = 0
         [Enum(UnityEngine.Rendering.ColorWriteMask)] _ColorMask("Color Mask", Float) = 15
 
-        [KeywordEnum(None, Auto, View, Vertical)] _Billboard_Mode("Billboard Mode", Float) = 1
+        [KeywordEnum(None, Spherical, Cylindrical_World, Cylindrical_Local)] _Billboard_Mode("Billboard Mode", Float) = 1
         [Toggle(KEEP_CONSTANT_SCALING)] _KeepConstantScaling("Keep Constant Scaling", Int) = 0
         _ConstantScale("Constant Scale", Float) = 1
         
@@ -140,6 +140,7 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
         CGINCLUDE
         #include "UnityCG.cginc"
         #include "UnityUI.cginc"
+        #include "OSP Billboard.cginc"
 
         // TMP_Properties..........................................................................
         
@@ -347,34 +348,7 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
         float _VRChatCameraMode;
 
         float _SilhouetteFadeAlpha;
-
-        // Transformation..........................................................................
-
-        #define VERTICAL_BILLBOARD (_BILLBOARD_MODE_AUTO && defined(USING_STEREO_MATRICES) || _BILLBOARD_MODE_VERTICAL)
-
-        float3 GetCenterCameraPosition()
-        {
-        #if defined(USING_STEREO_MATRICES)
-            float3 worldPosition = (unity_StereoWorldSpaceCameraPos[0] + unity_StereoWorldSpaceCameraPos[1]) / 2.0;
-        #else
-            float3 worldPosition = _WorldSpaceCameraPos.xyz;
-        #endif
-            return worldPosition;
-        }
-
-        float4x4 LookAtMatrix(float3 forward, float3 up)
-        {
-            float3 xAxis = normalize(cross(forward, up));
-            float3 yAxis = up;
-            float3 zAxis = forward;
-            return float4x4(
-                xAxis.x, yAxis.x, zAxis.x, 0,
-                xAxis.y, yAxis.y, zAxis.y, 0,
-                xAxis.z, yAxis.z, zAxis.z, 0,
-                0, 0, 0, 1
-                );
-        }
-
+        
         // Shader Functions........................................................................
 
         pixel_t VertShader(vertex_t input)
@@ -392,10 +366,8 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
             vert.x += _VertexOffsetX;
             vert.y += _VertexOffsetY;
 
-        #if KEEP_CONSTANT_SCALING || VERTICAL_BILLBOARD || DISTANCE_FADE_ON
-            float3 objectCenterWs = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
-            float3 centerViewDirectionWs = GetCenterCameraPosition() - objectCenterWs;
-            float centerViewDistanceWs = length(centerViewDirectionWs); 
+        #if KEEP_CONSTANT_SCALING || DISTANCE_FADE_ON
+            float centerViewDistanceWs = length(unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition());
         #endif
 
             float scaleOs = length(float3(UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z));
@@ -407,16 +379,8 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
             float pixelConstantScale = 1.0;
         #endif
 
-        #if _BILLBOARD_MODE_NONE
-            float4 vPosition = UnityObjectToClipPos(input.position);
-        #elif VERTICAL_BILLBOARD
-            float3x3 rotation = LookAtMatrix(centerViewDirectionWs, float3(0, 1, 0));
-            float3 positionWs = mul(rotation, scaleOs * vert.xyz) + objectCenterWs.xyz;
-            float4 vPosition = mul(UNITY_MATRIX_VP, float4(positionWs, 1.0));
-        #else
-            float4 positionVs = mul(UNITY_MATRIX_MV, float4(0, 0, 0, 1)) + scaleOs * float4(input.position.xy, 0, 0);
-            float4 vPosition = mul(UNITY_MATRIX_P, positionVs);
-        #endif
+            vert.xyz *= scaleOs;
+            float4 vPosition = BillboardCs(vert);
 
             float2 pixelSize = vPosition.w;
             pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
@@ -575,7 +539,7 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
             #pragma shader_feature __ UNDERLAY_ON UNDERLAY_INNER
             #pragma shader_feature __ GLOW_ON
             #pragma shader_feature_local __ DISTANCE_FADE_ON
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_VIEW _BILLBOARD_MODE_VERTICAL
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
             #pragma shader_feature_local KEEP_CONSTANT_SCALING
 
             #pragma multi_compile __ UNITY_UI_CLIP_RECT
@@ -599,7 +563,7 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
             #pragma shader_feature __ GLOW_ON
             #pragma shader_feature_local __ DISTANCE_FADE_ON
             #pragma shader_feature_local __ SILHOUETTE_FADING_ON
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_VIEW _BILLBOARD_MODE_VERTICAL
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
 
             #pragma multi_compile __ UNITY_UI_CLIP_RECT
             #pragma multi_compile __ UNITY_UI_ALPHACLIP

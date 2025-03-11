@@ -18,7 +18,7 @@ Shader "Orchid Seal/OSP Billboard/Supersampled UI Billboard"
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
         
-        [KeywordEnum(None, Auto, View, Vertical)] _Billboard_Mode("Billboard Mode", Float) = 1
+        [KeywordEnum(None, Spherical, Cylindrical_World, Cylindrical_Local)] _Billboard_Mode("Billboard Mode", Float) = 1
     }
 
     SubShader
@@ -57,34 +57,11 @@ Shader "Orchid Seal/OSP Billboard/Supersampled UI Billboard"
             #pragma target 3.0
 
             #include "UnityCG.cginc"
-            #include "UnityUI.cginc"
+            #include "OSP Billboard.cginc"
 
             #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
-            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_AUTO _BILLBOARD_MODE_VIEW _BILLBOARD_MODE_VERTICAL
-
-            float3 GetCenterCameraPosition()
-            {
-            #if defined(USING_STEREO_MATRICES)
-                float3 worldPosition = (unity_StereoWorldSpaceCameraPos[0] + unity_StereoWorldSpaceCameraPos[1]) / 2.0;
-            #else
-                float3 worldPosition = _WorldSpaceCameraPos.xyz;
-            #endif
-                return worldPosition;
-            }
-
-            float4x4 LookAtMatrix(float3 forward, float3 up)
-            {
-                float3 xAxis = normalize(cross(forward, up));
-                float3 yAxis = up;
-                float3 zAxis = forward;
-                return float4x4(
-                    xAxis.x, yAxis.x, zAxis.x, 0,
-                    xAxis.y, yAxis.y, zAxis.y, 0,
-                    xAxis.z, yAxis.z, zAxis.z, 0,
-                    0, 0, 0, 1
-                    );
-            }
+            #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
 
             struct appdata_t
             {
@@ -117,25 +94,15 @@ Shader "Orchid Seal/OSP Billboard/Supersampled UI Billboard"
                 v2f OUT;
                 UNITY_SETUP_INSTANCE_ID(v);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
-
-                float3 objectCenterWs = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
-                float3 viewDirectionWs = GetCenterCameraPosition() - objectCenterWs;
+                
         	    float scaleOs = length(float3(UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z));
-        	    // scaleOs *= (_KeepConstantScaling) ? _ConstantScale * length(viewDirectionWs) : 1;
+        	    // scaleOs *= (_KeepConstantScaling) ? _ConstantScale * length(unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition()); : 1;
 
-            #if _BILLBOARD_MODE_NONE
-                float4 vPosition = UnityObjectToClipPos(v.vertex);
-            #elif (_BILLBOARD_MODE_AUTO && defined(USING_STEREO_MATRICES) || _BILLBOARD_MODE_VERTICAL)
-                float3x3 rotation = LookAtMatrix(viewDirectionWs, float3(0, 1, 0));
-                float3 positionWs = mul(rotation, scaleOs * v.vertex.xyz) + objectCenterWs.xyz;
-                float4 vPosition = mul(UNITY_MATRIX_VP, float4(positionWs, 1.0));
-            #else
-        	    float4 positionVs = mul(UNITY_MATRIX_MV, float4(0, 0, 0, 1)) + scaleOs * float4(v.vertex.xy, 0, 0);
-			    float4 vPosition = mul(UNITY_MATRIX_P, positionVs);
-            #endif
+                float4 positionOs = v.vertex;
+                positionOs.xyz *= scaleOs;
+                float4 vPosition = BillboardCs(positionOs);
                 
                 OUT.vertex = vPosition;
-
                 OUT.texcoord = OUT.texcoordCentroid = TRANSFORM_TEX(v.texcoord, _MainTex);
 
                 float2 pixelSize = vPosition.w;

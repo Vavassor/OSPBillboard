@@ -15,11 +15,13 @@ Material:
   - USE_ALPHA_TEST
   - USE_FLIPBOOK
   - USE_NON_UNIFORM_SCALE
-  - _BILLBOARD_MODE_WORLD_Y
+  - USE_PIXEL_SHARPEN
+  - _BILLBOARD_MODE_CYLINDRICAL_LOCAL
   - _COLORMODE_MULTIPLY
   m_InvalidKeywords:
   - _ALPHATOMASK_ON
   - _BILLBOARD_MODE_VERTICAL
+  - _BILLBOARD_MODE_WORLD_Y
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -120,6 +122,8 @@ Material:
     - _UseFlipbookSmoothing: 0
     - _UseGammaSpace: 0
     - _UseNonUniformScale: 1
+    - _UsePixelSharpen: 1
+    - _UsePixelSmooth: 0
     - _ZTest: 4
     - _ZWrite: 1
     m_Colors:
@@ -127,5 +131,6 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FlipbookScrollVelocity: {r: 0, g: 0, b: 0, a: 0}
     - _FlipbookTint: {r: 1, g: 1, b: 1, a: 1}
+    - _Position: {r: 0, g: 0, b: 0, a: 0}
     - _Scale: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
