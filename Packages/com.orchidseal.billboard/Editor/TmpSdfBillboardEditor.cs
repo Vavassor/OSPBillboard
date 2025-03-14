@@ -9,11 +9,12 @@ namespace OrchidSeal.Billboard.Editor
     {
         private static class Styles
         {
-            public static GUIStyle sectionVerticalLayout = new(EditorStyles.helpBox)
+            public static GUIStyle sectionVerticalLayout = new()
             {
-                margin = new RectOffset(0, 0, 0, 20),
-                padding = new RectOffset(8, 8, 8, 8),
+                margin = new RectOffset(0, 0, 0, 12),
             };
+
+            public static GUIStyle sectionHeading = new(EditorStyles.boldLabel);
         }
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -87,16 +88,14 @@ namespace OrchidSeal.Billboard.Editor
         // Face Options............................................................................
 
         private bool showFaceOptions = true;
-        private readonly GUIContent faceFoldoutLabel = new GUIContent("Face");
+        private const string faceFoldoutLabel = "Face";
         private readonly GUIContent faceColorLabel = new GUIContent("Color");
         private readonly GUIContent faceSoftnessLabel = new GUIContent("Softness");
         private readonly GUIContent faceDilationLabel = new GUIContent("Dilation");
 
         private void FaceOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            showFaceOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showFaceOptions, faceFoldoutLabel);
-
-            if (showFaceOptions)
+            if (ShaderGuiUtility.FoldoutHeader(faceFoldoutLabel, ref showFaceOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -106,14 +105,12 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Outline Options.........................................................................
 
         private bool showOutlineOptions = true;
-        private readonly GUIContent outlineFoldoutLabel = new GUIContent("Outline");
+        private const string outlineFoldoutLabel = "Outline";
         private readonly GUIContent outlineTextureLabel = new GUIContent("Texture");
         private readonly GUIContent outlineUvSpeedXLabel = new GUIContent("UV Speed X");
         private readonly GUIContent outlineUvSpeedYLabel = new GUIContent("UV Speed Y");
@@ -122,9 +119,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void OutlineOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            showOutlineOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showOutlineOptions, outlineFoldoutLabel);
-
-            if (showOutlineOptions)
+            if (ShaderGuiUtility.FoldoutHeader(outlineFoldoutLabel, ref showOutlineOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -136,14 +131,12 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Underlay Options........................................................................
 
         private bool showUnderlayOptions;
-        private readonly GUIContent underlayFoldoutLabel = new GUIContent("Underlay");
+        private const string underlayFoldoutLabel = "Underlay";
         private readonly GUIContent underlayEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent underlayTypeLabel = new GUIContent("Type");
         private readonly GUIContent underlayColorLabel = new GUIContent("Color");
@@ -161,9 +154,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void UnderlayOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showUnderlayOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showUnderlayOptions, underlayFoldoutLabel);
-
-            if (showUnderlayOptions)
+            if (ShaderGuiUtility.FoldoutHeader(underlayFoldoutLabel, ref showUnderlayOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -179,21 +170,17 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Lighting Options........................................................................
 
         private bool showLightingOptions;
-        private readonly GUIContent lightingFoldoutLabel = new GUIContent("Lighting");
+        private const string lightingFoldoutLabel = "Lighting";
         private readonly GUIContent lightingEnabledLabel = new GUIContent("Enabled");
 
         private void LightingOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showLightingOptions = EditorGUILayout.Foldout(showLightingOptions, lightingFoldoutLabel, true, EditorStyles.foldoutHeader);
-
-            if (showLightingOptions)
+            if (ShaderGuiUtility.FoldoutHeader(lightingFoldoutLabel, ref showLightingOptions))
             {
                 // EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 EditorGUILayout.BeginHorizontal();
@@ -212,9 +199,8 @@ namespace OrchidSeal.Billboard.Editor
         }
 
         // Bevel Options...........................................................................
-
-        private bool showBevelOptions;
-        private readonly GUIContent bevelFoldoutLabel = new GUIContent("Bevel");
+        
+        private readonly GUIContent bevelSectionHeading = new GUIContent("Bevel");
         private readonly GUIContent bevelTypeLabel = new GUIContent("Type");
         private readonly GUIContent bevelAmountLabel = new GUIContent("Amount");
         private readonly GUIContent bevelOffsetLabel = new GUIContent("Offset");
@@ -224,28 +210,22 @@ namespace OrchidSeal.Billboard.Editor
 
         private void BevelOptions(MaterialEditor materialEditor, MaterialProperty[] properties, bool isDisabled)
         {
-            showBevelOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showBevelOptions, bevelFoldoutLabel);
+            EditorGUILayout.LabelField(bevelSectionHeading, Styles.sectionHeading);
 
-            if (showBevelOptions)
-            {
-                EditorGUI.BeginDisabledGroup(isDisabled);
-                materialEditor.ShaderProperty(FindProperty("_ShaderFlags", properties), bevelTypeLabel);
-                materialEditor.ShaderProperty(FindProperty("_Bevel", properties), bevelAmountLabel);
-                materialEditor.ShaderProperty(FindProperty("_BevelOffset", properties), bevelOffsetLabel);
-                materialEditor.ShaderProperty(FindProperty("_BevelWidth", properties), bevelWidthLabel);
-                materialEditor.ShaderProperty(FindProperty("_BevelClamp", properties), bevelClampLabel);
-                materialEditor.ShaderProperty(FindProperty("_BevelRoundness", properties), bevelRoundnessLabel);
-                EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
-            }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUI.BeginDisabledGroup(isDisabled);
+            materialEditor.ShaderProperty(FindProperty("_ShaderFlags", properties), bevelTypeLabel);
+            materialEditor.ShaderProperty(FindProperty("_Bevel", properties), bevelAmountLabel);
+            materialEditor.ShaderProperty(FindProperty("_BevelOffset", properties), bevelOffsetLabel);
+            materialEditor.ShaderProperty(FindProperty("_BevelWidth", properties), bevelWidthLabel);
+            materialEditor.ShaderProperty(FindProperty("_BevelClamp", properties), bevelClampLabel);
+            materialEditor.ShaderProperty(FindProperty("_BevelRoundness", properties), bevelRoundnessLabel);
+            EditorGUI.EndDisabledGroup();
+            GUILayout.Space(20);
         }
 
         // Local Lighting Options..................................................................
-
-        private bool showLocalLightingOptions;
-        private readonly GUIContent localLightingFoldoutLabel = new GUIContent("Local Lighting");
+        
+        private readonly GUIContent localLightingSectionHeading = new GUIContent("Local Lighting");
         private readonly GUIContent localLightingLightAngleLabel = new GUIContent("Light Angle");
         private readonly GUIContent localLightingSpecularColorLabel = new GUIContent("Specular");
         private readonly GUIContent localLightingSpecularPowerLabel = new GUIContent("Specular Power");
@@ -255,53 +235,41 @@ namespace OrchidSeal.Billboard.Editor
 
         private void LocalLightingOptions(MaterialEditor materialEditor, MaterialProperty[] properties, bool isDisabled)
         {
-            showLocalLightingOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showLocalLightingOptions, localLightingFoldoutLabel);
-
-            if (showLocalLightingOptions)
-            {
-                EditorGUI.BeginDisabledGroup(isDisabled);
-                materialEditor.ShaderProperty(FindProperty("_LightAngle", properties), localLightingLightAngleLabel);
-                materialEditor.ShaderProperty(FindProperty("_SpecularColor", properties), localLightingSpecularColorLabel);
-                materialEditor.ShaderProperty(FindProperty("_SpecularPower", properties), localLightingSpecularPowerLabel);
-                materialEditor.ShaderProperty(FindProperty("_Reflectivity", properties), localLightingReflectivityLabel);
-                materialEditor.ShaderProperty(FindProperty("_Diffuse", properties), localLightingDiffuseLabel);
-                materialEditor.ShaderProperty(FindProperty("_Ambient", properties), localLightingAmbientLabel);
-                EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
-            }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.LabelField(localLightingSectionHeading, Styles.sectionHeading);
+            
+            EditorGUI.BeginDisabledGroup(isDisabled);
+            materialEditor.ShaderProperty(FindProperty("_LightAngle", properties), localLightingLightAngleLabel);
+            materialEditor.ShaderProperty(FindProperty("_SpecularColor", properties), localLightingSpecularColorLabel);
+            materialEditor.ShaderProperty(FindProperty("_SpecularPower", properties), localLightingSpecularPowerLabel);
+            materialEditor.ShaderProperty(FindProperty("_Reflectivity", properties), localLightingReflectivityLabel);
+            materialEditor.ShaderProperty(FindProperty("_Diffuse", properties), localLightingDiffuseLabel);
+            materialEditor.ShaderProperty(FindProperty("_Ambient", properties), localLightingAmbientLabel);
+            EditorGUI.EndDisabledGroup();
+            GUILayout.Space(20);
         }
 
         // Bump Map Options........................................................................
-
-        private bool showBumpMapOptions;
-        private readonly GUIContent bumpMapFoldoutLabel = new GUIContent("Normal Map");
+        
+        private readonly GUIContent bumpMapSectionHeading = new GUIContent("Normal Map");
         private readonly GUIContent bumpMapLabel = new GUIContent("Texture");
         private readonly GUIContent bumpMapFaceLabel = new GUIContent("Face");
         private readonly GUIContent bumpMapOutlineLabel = new GUIContent("Outline");
 
         private void BumpMapOptions(MaterialEditor materialEditor, MaterialProperty[] properties, bool isDisabled)
         {
-            showBumpMapOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showBumpMapOptions, bumpMapFoldoutLabel);
-
-            if (showBumpMapOptions)
-            {
-                EditorGUI.BeginDisabledGroup(isDisabled);
-                materialEditor.ShaderProperty(FindProperty("_BumpMap", properties), bumpMapLabel);
-                materialEditor.ShaderProperty(FindProperty("_BumpFace", properties), bumpMapFaceLabel);
-                materialEditor.ShaderProperty(FindProperty("_BumpOutline", properties), bumpMapOutlineLabel);
-                EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
-            }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.LabelField(bumpMapSectionHeading, Styles.sectionHeading);
+            
+            EditorGUI.BeginDisabledGroup(isDisabled);
+            materialEditor.TexturePropertySingleLine(bumpMapLabel, FindProperty("_BumpMap", properties));
+            materialEditor.ShaderProperty(FindProperty("_BumpFace", properties), bumpMapFaceLabel);
+            materialEditor.ShaderProperty(FindProperty("_BumpOutline", properties), bumpMapOutlineLabel);
+            EditorGUI.EndDisabledGroup();
+            GUILayout.Space(20);
         }
 
         // Reflection Options......................................................................
-
-        private bool showReflectionOptions;
-        private readonly GUIContent reflectionFoldoutLabel = new GUIContent("Environment Map");
+        
+        private readonly GUIContent reflectionSectionLabel = new GUIContent("Environment Map");
         private readonly GUIContent reflectionMapLabel = new GUIContent("Texture");
         private readonly GUIContent reflectionFaceLabel = new GUIContent("Face");
         private readonly GUIContent reflectionOutlineLabel = new GUIContent("Outline");
@@ -309,26 +277,21 @@ namespace OrchidSeal.Billboard.Editor
 
         private void ReflectionOptions(MaterialEditor materialEditor, MaterialProperty[] properties, bool isDisabled)
         {
-            showReflectionOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showReflectionOptions, reflectionFoldoutLabel);
-
-            if (showReflectionOptions)
-            {
-                EditorGUI.BeginDisabledGroup(isDisabled);
-                materialEditor.ShaderProperty(FindProperty("_ReflectFaceColor", properties), reflectionFaceLabel);
-                materialEditor.ShaderProperty(FindProperty("_ReflectOutlineColor", properties), reflectionOutlineLabel);
-                materialEditor.ShaderProperty(FindProperty("_Cube", properties), reflectionMapLabel);
-                ShaderGuiUtility.Vector3Property(FindProperty("_EnvMatrixRotation", properties), reflectionRotationLabel);
-                EditorGUI.EndDisabledGroup();
-                GUILayout.Space(20);
-            }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
+            EditorGUILayout.LabelField(reflectionSectionLabel, Styles.sectionHeading);
+            
+            EditorGUI.BeginDisabledGroup(isDisabled);
+            materialEditor.ShaderProperty(FindProperty("_ReflectFaceColor", properties), reflectionFaceLabel);
+            materialEditor.ShaderProperty(FindProperty("_ReflectOutlineColor", properties), reflectionOutlineLabel);
+            materialEditor.TexturePropertySingleLine(reflectionMapLabel, FindProperty("_Cube", properties));
+            ShaderGuiUtility.Vector3Property(FindProperty("_EnvMatrixRotation", properties), reflectionRotationLabel);
+            EditorGUI.EndDisabledGroup();
+            GUILayout.Space(20);
         }
 
         // Glow Options............................................................................
 
         private bool showGlowOptions;
-        private readonly GUIContent glowFoldoutLabel = new GUIContent("Glow");
+        private const string glowFoldoutLabel = "Glow";
         private readonly GUIContent glowEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent glowColorLabel = new GUIContent("Color");
         private readonly GUIContent glowOffsetLabel = new GUIContent("Offset");
@@ -338,9 +301,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void GlowOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showGlowOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showGlowOptions, glowFoldoutLabel);
-
-            if (showGlowOptions)
+            if (ShaderGuiUtility.FoldoutHeader(glowFoldoutLabel, ref showGlowOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -356,23 +317,19 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Billboard Options.......................................................................
 
         private bool showBillboardOptions = true;
-        private readonly GUIContent billboardFoldoutLabel = new GUIContent("Billboard");
+        private const string billboardFoldoutLabel = "Billboard";
         private readonly GUIContent billboardModeLabel = new GUIContent("Mode", "None:\nNo billboarding.\n\nAuto:\n\"Vertical\" mode when in VR, and \"View\" mode otherwise.\n\nView:\nFace the camera and match its tilt.\n\nVertical:\nStays upright. Use for objects that appear grounded like trees or candle flame.");
         private readonly GUIContent keepConstantScaleLabel = new GUIContent("Keep Constant Scale", "Do not shrink when further away.");
         private readonly GUIContent constantScaleLabel = new GUIContent("Constant Scale");
 
         private void BillboardOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showBillboardOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showBillboardOptions, billboardFoldoutLabel);
-
-            if (showBillboardOptions)
+            if (ShaderGuiUtility.FoldoutHeader(billboardFoldoutLabel, ref showBillboardOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -384,14 +341,12 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Distance Fade Options...................................................................
 
         private bool showDistanceFadeOptions;
-        private readonly GUIContent distanceFadeFoldoutLabel = new GUIContent("Distance Fade");
+        private const string distanceFadeFoldoutLabel = "Distance Fade";
         private readonly GUIContent distanceFadeEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent distanceFadeMinAlphaLabel = new GUIContent("Min Alpha");
         private readonly GUIContent distanceFadeMaxAlphaLabel = new GUIContent("Max Alpha");
@@ -400,9 +355,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showDistanceFadeOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showDistanceFadeOptions, distanceFadeFoldoutLabel);
-
-            if (showDistanceFadeOptions)
+            if (ShaderGuiUtility.FoldoutHeader(distanceFadeFoldoutLabel, ref showDistanceFadeOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -416,22 +369,18 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Silhouette Options......................................................................
 
         private bool showSilhouetteOptions;
-        private readonly GUIContent silhouetteFoldoutLabel = new GUIContent("Silhouette");
+        private const string silhouetteFoldoutLabel = "Silhouette";
         private readonly GUIContent silhouetteEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent silhouetteFadeAlphaLabel = new GUIContent("Fade Alpha");
 
         private void SilhouetteOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showSilhouetteOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showSilhouetteOptions, silhouetteFoldoutLabel);
-
-            if (showSilhouetteOptions)
+            if (ShaderGuiUtility.FoldoutHeader(silhouetteFoldoutLabel, ref showSilhouetteOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -448,14 +397,12 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         // Debug Options...........................................................................
 
         private bool showDebugOptions;
-        private readonly GUIContent debugFoldoutLabel = new GUIContent("Debug");
+        private const string debugFoldoutLabel = "Debug";
         private readonly GUIContent fontAtlasLabel = new GUIContent("Font Atlas");
         private readonly GUIContent textureWidthLabel = new GUIContent("Texture Width");
         private readonly GUIContent textureHeightLabel = new GUIContent("Texture Height");
@@ -486,9 +433,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void DebugOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            showDebugOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showDebugOptions, debugFoldoutLabel);
-
-            if (showDebugOptions)
+            if (ShaderGuiUtility.FoldoutHeader(debugFoldoutLabel, ref showDebugOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -535,8 +480,6 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
     }
 }

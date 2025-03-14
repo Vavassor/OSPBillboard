@@ -7,7 +7,7 @@ namespace OrchidSeal.Billboard.Editor
 {
     public class FlipbookCreatorEditor : EditorWindow
     {
-        private FilterMode filterMode = FilterMode.Trilinear;
+        private FilterMode filterMode = FilterMode.Bilinear;
         private string[] gifPaths;
         private bool isOutputFolderFoldoutOpen;
         private string outputFolder;
@@ -16,6 +16,22 @@ namespace OrchidSeal.Billboard.Editor
         [SerializeField] private Texture[] sourceTextures = new Texture[1];
         private SerializedProperty sourceTexturesProp;
         private TextureWrapMode wrapMode = TextureWrapMode.Clamp;
+
+        private static class Styles
+        {
+            public static readonly GUIContent chooseOutputFolderButtonLabel = new ("Choose Folder");
+            public const string chooseOutputFolderMenuTitle = "Choose Folder";
+            public static readonly GUIContent createTextureArraysButtonLabel = new ("Create Texture Arrays");
+            public static readonly GUIContent deselectOutputFolderButtonLabel = new ("Remove");
+            public static readonly GUIContent filterModeFieldLabel = new ("Filter Mode");
+            public static readonly GUIContent outputFolderUnspecifiedMessage = new ("Files are output to the same folder as the source textures if no folder is specified.");
+            public static readonly GUIContent outputFolderFoldoutHeader = new ("Output Folder");
+            public static readonly GUIContent  resizeModeFieldLabel = new ("Resize Mode");
+            public const string resizeModeNonePerformanceWarning = "Resize Mode \"None\" may make larger file sizes! Compression usually requires certain image dimensions. Use sides divisible by 4, or powers of two if possible.";
+            public static readonly GUIContent sourceTexturesFieldLabel = new ("Source Textures");
+            public static readonly GUIContent windowTitle = new ("Create Flipbook");
+            public static readonly GUIContent wrapModeFieldLabel = new ("Wrap Mode");
+        }
         
         [MenuItem ("Window/Orchid Seal/Billboard - Create Flipbook")]
         public static void ShowWindow()
@@ -25,7 +41,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void OnEnable()
         {
-            titleContent = new GUIContent("Create Flipbook");
+            titleContent = Styles.windowTitle;
         }
 
         private void CreateGUI()
@@ -43,36 +59,36 @@ namespace OrchidSeal.Billboard.Editor
 
         private void OnGUI()
         {
-            EditorGUILayout.PropertyField(sourceTexturesProp, new GUIContent("Source Textures"));
+            EditorGUILayout.PropertyField(sourceTexturesProp, Styles.sourceTexturesFieldLabel);
             
             EditorGUILayout.BeginVertical();
-            filterMode = (FilterMode) EditorGUILayout.EnumPopup("Filter Mode", filterMode);
-            wrapMode = (TextureWrapMode) EditorGUILayout.EnumPopup("Wrap Mode", wrapMode);
-            resizeMode = (ResizeMode) EditorGUILayout.EnumPopup("Resize Mode", resizeMode);
+            filterMode = (FilterMode) EditorGUILayout.EnumPopup(Styles.filterModeFieldLabel, filterMode);
+            wrapMode = (TextureWrapMode) EditorGUILayout.EnumPopup(Styles.wrapModeFieldLabel, wrapMode);
+            resizeMode = (ResizeMode) EditorGUILayout.EnumPopup(Styles.resizeModeFieldLabel, resizeMode);
             if (resizeMode == ResizeMode.None)
             {
-                EditorGUILayout.HelpBox("Resize Mode \"None\" may make larger file sizes! Compression usually requires certain image dimensions. Use sides divisible by 4, or powers of two if possible.", MessageType.Warning);
+                EditorGUILayout.HelpBox(Styles.resizeModeNonePerformanceWarning, MessageType.Warning);
             }
             EditorGUILayout.EndVertical();
             
             EditorGUILayout.Space();
 
-            isOutputFolderFoldoutOpen = EditorGUILayout.BeginFoldoutHeaderGroup(isOutputFolderFoldoutOpen, "Output Folder");
+            isOutputFolderFoldoutOpen = EditorGUILayout.BeginFoldoutHeaderGroup(isOutputFolderFoldoutOpen, Styles.outputFolderFoldoutHeader);
             if (isOutputFolderFoldoutOpen)
             {
-                EditorGUILayout.LabelField("Files are output to the same folder as the source textures if no folder is specified.", EditorStyles.wordWrappedLabel);
-                if (GUILayout.Button("Choose Folder", GUILayout.ExpandWidth(false)))
+                EditorGUILayout.LabelField(Styles.outputFolderUnspecifiedMessage, EditorStyles.wordWrappedLabel);
+                if (GUILayout.Button(Styles.chooseOutputFolderButtonLabel, GUILayout.ExpandWidth(false)))
                 {
-                    var fullPath = EditorUtility.SaveFolderPanel("Choose Folder", "Assets", "");
+                    var fullPath = EditorUtility.SaveFolderPanel(Styles.chooseOutputFolderMenuTitle, "Assets", "");
                     outputFolder = GetPathRelativeToAssets(fullPath);
                 }
                 EditorGUILayout.BeginHorizontal();
-                if (!string.IsNullOrEmpty(outputFolder) && GUILayout.Button("Remove", GUILayout.ExpandWidth(false)))
+                if (!string.IsNullOrEmpty(outputFolder) && GUILayout.Button(Styles.deselectOutputFolderButtonLabel, GUILayout.ExpandWidth(false)))
                 {
                     outputFolder = null;
                 }
                 EditorGUILayout.LabelField(outputFolder, EditorStyles.wordWrappedLabel);
-                EditorGUILayout.EndHorizontal();    
+                EditorGUILayout.EndHorizontal();
             }
             EditorGUILayout.EndFoldoutHeaderGroup();
             
@@ -80,7 +96,7 @@ namespace OrchidSeal.Billboard.Editor
             
             EditorGUILayout.Space();
             
-            if (GUILayout.Button("Create Texture Arrays"))
+            if (GUILayout.Button(Styles.createTextureArraysButtonLabel))
             {
                 if (sourceTextures != null)
                 {

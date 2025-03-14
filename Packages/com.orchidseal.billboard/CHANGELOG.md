@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+- Adds enable toggles to collapsible section headers in editor UI.
+
+## v0.3.0
+
 Released March 10, 2025.
 
 - Adds a lit billboard shader.

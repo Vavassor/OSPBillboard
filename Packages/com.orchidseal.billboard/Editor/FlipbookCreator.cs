@@ -124,7 +124,7 @@ namespace OrchidSeal.Billboard.Editor
                 }
                 case ResizeMode.Center:
                 {
-                    var blitMaterial = new Material(Shader.Find("Orchid Seal/OSP Billboard/Editor/Center Blit"));
+                    var blitMaterial = new Material(Shader.Find("Hidden/Orchid Seal/OSP Billboard/Editor/Center Blit"));
                     var width = Mathf.NextPowerOfTwo(image.Width);
                     var height = Mathf.NextPowerOfTwo(image.Height);
                     blitMaterial.SetVector(TargetTexelSize, new Vector4(1.0f / width, 1.0f / height, width, height));
@@ -132,7 +132,7 @@ namespace OrchidSeal.Billboard.Editor
                 }
                 case ResizeMode.Contain:
                 {
-                    var blitMaterial = new Material(Shader.Find("Orchid Seal/OSP Billboard/Editor/Contain Blit"));
+                    var blitMaterial = new Material(Shader.Find("Hidden/Orchid Seal/OSP Billboard/Editor/Contain Blit"));
                     blitMaterial.SetFloat(Aspect, image.Width / (float) image.Height);
                     return CreateScaledFrames(image, spec, blitMaterial, true);
                 }
@@ -147,6 +147,7 @@ namespace OrchidSeal.Billboard.Editor
         {
             var width = Mathf.NextPowerOfTwo(image.Width);
             var height = Mathf.NextPowerOfTwo(image.Height);
+            
             var frameCount = image.FrameCount;
             var textureFormat = image.HasAlpha ? TextureFormat.DXT5 : TextureFormat.DXT1;
             var texture2dArray = new Texture2DArray(width, height, frameCount, textureFormat, true)

@@ -18,10 +18,9 @@ namespace OrchidSeal.Billboard.Editor
         
         private static class Styles
         {
-            public static GUIStyle sectionVerticalLayout = new(EditorStyles.helpBox)
+            public static GUIStyle sectionVerticalLayout = new()
             {
-                margin = new RectOffset(0, 0, 0, 20),
-                padding = new RectOffset(8, 8, 8, 8),
+                margin = new RectOffset(0, 0, 0, 12),
             };
             
             // Blending option labels
@@ -74,9 +73,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void BlendingOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
         {
-            showBlendingOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showBlendingOptions, Styles.blendingFoldoutLabel);
-
-            if (showBlendingOptions)
+            if (ShaderGuiUtility.FoldoutHeader(Styles.blendingFoldoutLabel, ref showBlendingOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -123,8 +120,6 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-            
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
         
         private static void SetBlendMode(Material material)
@@ -235,9 +230,7 @@ namespace OrchidSeal.Billboard.Editor
 
         private void BaseOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
         {
-            showBaseOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showBaseOptions, Styles.baseFoldoutLabel);
-
-            if (showBaseOptions)
+            if (ShaderGuiUtility.FoldoutHeader(Styles.baseFoldoutLabel, ref showBaseOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -257,15 +250,11 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-            
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
         
         private void EmissionOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
         {
-            showEmissionOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showEmissionOptions, Styles.emissionFoldoutLabel);
-
-            if (showEmissionOptions)
+            if (ShaderGuiUtility.FoldoutHeader(Styles.emissionFoldoutLabel, ref showEmissionOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -278,15 +267,11 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
         
         private void TransformationOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            showTransformationOptions = EditorGUILayout.BeginFoldoutHeaderGroup(showTransformationOptions, Styles.transformationFoldoutLabel);
-
-            if (showTransformationOptions)
+            if (ShaderGuiUtility.FoldoutHeader(Styles.transformationFoldoutLabel, ref showTransformationOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -297,8 +282,6 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.EndVertical();
             }
-
-            EditorGUILayout.EndFoldoutHeaderGroup();
         }
     }
 }
