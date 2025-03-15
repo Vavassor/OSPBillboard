@@ -14,8 +14,8 @@ namespace OrchidSeal.Billboard.Editor
             public static int headerHeight = 22;
 
             public static GUIStyle foldoutCollapseToggle = new (EditorStyles.foldout);
-            public static Color foldoutHeaderBackground = new (0.34f, 0.34f, 0.34f);
-            public static Color foldoutHeaderBackgroundHover = new(0.29f, 0.29f, 0.29f);
+            public static Color foldoutHeaderBackground = new(0.29f, 0.29f, 0.29f);
+            public static Color foldoutHeaderBackgroundHover = new (0.34f, 0.34f, 0.34f);
             
             public static GUIStyle foldoutHeaderLabel = new(EditorStyles.boldLabel)
             {

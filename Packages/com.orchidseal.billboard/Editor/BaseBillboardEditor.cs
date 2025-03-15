@@ -10,10 +10,27 @@ namespace OrchidSeal.Billboard.Editor
         
         private static class Styles
         {
+            public static readonly GUIStyle linkIcon = new()
+            {
+                fixedHeight = 20,
+                fixedWidth = 20,
+            };
+
+            public static readonly Color aboutBarColor = new(0.29f, 0.29f, 0.29f);
+            public static int aboutBarHeight = 26;
+            public static GUIStyle aboutHorizontalLayout = new(EditorStyles.inspectorFullWidthMargins)
+            {
+                margin = new RectOffset(0, 0, 3, 1),
+            };
+            
             public static GUIStyle sectionVerticalLayout = new()
             {
                 margin = new RectOffset(0, 0, 0, 12),
             };
+            
+            // About
+            public static readonly GUIContent supportIcon = new (Resources.Load<Texture2D>("kofi_symbol"));
+            public static readonly GUIContent websiteIcon = new (Resources.Load<Texture2D>("Orchid Seal Logo"));
             
             // Transformation
             public const string transformationFoldoutLabel = "Transformation";
@@ -34,6 +51,37 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent stencilPassLabel = new ("Pass");
             public static readonly GUIContent stencilFailLabel = new ("Fail");
             public static readonly GUIContent stencilZFailLabel = new ("ZFail");
+        }
+
+        private static bool ButtonLink(Rect rect, GUIContent content, GUIStyle style)
+        {
+            EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+            return GUI.Button(rect, content, style);
+        }
+
+        protected static void AboutLinks()
+        {
+            var rect = GUILayoutUtility.GetRect(1.0f, Styles.aboutBarHeight, Styles.aboutHorizontalLayout);
+            rect.xMin = 0;
+            rect.xMax = Screen.width;
+            rect.yMin = 2;
+            EditorGUI.DrawRect(rect, Styles.aboutBarColor);
+            
+            var buttonRect = new Rect(rect);
+            buttonRect.xMin = 8;
+            buttonRect.yMin += Styles.aboutHorizontalLayout.margin.top;
+            buttonRect.height = 20;
+            buttonRect.width = 20;
+            if (ButtonLink(buttonRect, Styles.supportIcon, Styles.linkIcon))
+            {
+                Application.OpenURL("https://ko-fi.com/vavassor");
+            }
+
+            buttonRect.x += 28;
+            if (ButtonLink(buttonRect, Styles.websiteIcon, Styles.linkIcon))
+            {
+                Application.OpenURL("https://orchidseal.com");
+            }
         }
         
         protected void TransformationOptions(MaterialEditor materialEditor, MaterialProperty[] properties)

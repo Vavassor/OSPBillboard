@@ -73,6 +73,7 @@ namespace OrchidSeal.Billboard.Editor
 
             var targetMaterial = materialEditor.target as Material;
 
+            AboutLinks();
             BlendingOptions(materialEditor, properties, targetMaterial);
             BaseOptions(materialEditor, properties);
             TransformationOptions(materialEditor, properties);
