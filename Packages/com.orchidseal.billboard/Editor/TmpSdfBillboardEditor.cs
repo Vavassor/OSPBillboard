@@ -39,7 +39,23 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(prop, label);
             }
         }
-
+        
+        private static bool MaterialKeywordFoldout(string title, ref bool isCollapsed, Material material, string[] keywords, string defaultKeyword)
+        {
+            var validKeywords = keywords.Where(keyword => !string.IsNullOrEmpty(keyword)).ToArray();
+            var shaderKeywords = material.shaderKeywords;
+            var isAnyEnabled = validKeywords.Any(keyword => shaderKeywords.Contains(keyword));
+            EditorGUI.BeginChangeCheck();
+            ShaderGuiUtility.FoldoutHeader(title, ref isCollapsed, ref isAnyEnabled);
+            if (!EditorGUI.EndChangeCheck()) return isCollapsed;
+            foreach (var t in validKeywords)
+            {
+                material.SetKeyword(new LocalKeyword(material.shader, t), isAnyEnabled && t == defaultKeyword);
+            }
+            EditorUtility.SetDirty(material);
+            return isCollapsed;
+        }
+        
         private static bool KeywordToggle(Material material, string keyword, GUIContent label, bool isReversed = false)
         {
             var isToggleOn = material.IsKeywordEnabled(keyword);
@@ -52,21 +68,6 @@ namespace OrchidSeal.Billboard.Editor
             material.SetKeyword(localKeyword, isToggleOn);
             EditorUtility.SetDirty(material);
             return isToggleOn;
-        }
-
-        private static void KeywordMultiToggle(Material material, string[] keywords, GUIContent label, string defaultKeyword)
-        {
-            var validKeywords = keywords.Where(keyword => !string.IsNullOrEmpty(keyword));
-            var shaderKeywords = material.shaderKeywords;
-            var isAnyEnabled = validKeywords.Any(keyword => shaderKeywords.Contains(keyword));
-            EditorGUI.BeginChangeCheck();
-            isAnyEnabled = EditorGUILayout.Toggle(label, isAnyEnabled);
-            if (!EditorGUI.EndChangeCheck()) return;
-            foreach (var t in validKeywords)
-            {
-                material.SetKeyword(new LocalKeyword(material.shader, t), isAnyEnabled && t == defaultKeyword);
-            }
-            EditorUtility.SetDirty(material);
         }
 
         private static void EnumKeywordProperty(Material material, GUIContent label, string[] keywords, GUIContent[] displayedOptions)
@@ -137,7 +138,6 @@ namespace OrchidSeal.Billboard.Editor
 
         private bool showUnderlayOptions;
         private const string underlayFoldoutLabel = "Underlay";
-        private readonly GUIContent underlayEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent underlayTypeLabel = new GUIContent("Type");
         private readonly GUIContent underlayColorLabel = new GUIContent("Color");
         private readonly GUIContent underlayOffsetXLabel = new GUIContent("Offset X");
@@ -154,11 +154,10 @@ namespace OrchidSeal.Billboard.Editor
 
         private void UnderlayOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.FoldoutHeader(underlayFoldoutLabel, ref showUnderlayOptions))
+            if (MaterialKeywordFoldout(underlayFoldoutLabel, ref showUnderlayOptions, material, underlayTypeKeywords, underlayTypeKeywords[1]))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                KeywordMultiToggle(material, underlayTypeKeywords, underlayEnabledLabel, underlayTypeKeywords[1]);
                 EditorGUI.BeginDisabledGroup(!(material.IsKeywordEnabled("UNDERLAY_ON") || material.IsKeywordEnabled("UNDERLAY_INNER")));
                 EnumKeywordProperty(material, underlayTypeLabel, underlayTypeKeywords, underlayTypeLabels);
                 materialEditor.ShaderProperty(FindProperty("_UnderlayColor", properties), underlayColorLabel);
@@ -176,17 +175,14 @@ namespace OrchidSeal.Billboard.Editor
 
         private bool showLightingOptions;
         private const string lightingFoldoutLabel = "Lighting";
-        private readonly GUIContent lightingEnabledLabel = new GUIContent("Enabled");
 
         private void LightingOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.FoldoutHeader(lightingFoldoutLabel, ref showLightingOptions))
+            if (ShaderGuiUtility.MaterialKeywordFoldout(lightingFoldoutLabel, ref showLightingOptions, material, "BEVEL_ON"))
             {
-                // EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.Space(10, false);
                 EditorGUILayout.BeginVertical();
-                KeywordToggle(material, "BEVEL_ON", lightingEnabledLabel);
                 var isDisabled = !material.IsKeywordEnabled("BEVEL_ON");
                 BevelOptions(materialEditor, properties, isDisabled);
                 LocalLightingOptions(materialEditor, properties, isDisabled);
@@ -194,7 +190,6 @@ namespace OrchidSeal.Billboard.Editor
                 ReflectionOptions(materialEditor, properties, isDisabled);
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.EndHorizontal();
-                // EditorGUILayout.EndVertical();
             }
         }
 
@@ -292,7 +287,6 @@ namespace OrchidSeal.Billboard.Editor
 
         private bool showGlowOptions;
         private const string glowFoldoutLabel = "Glow";
-        private readonly GUIContent glowEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent glowColorLabel = new GUIContent("Color");
         private readonly GUIContent glowOffsetLabel = new GUIContent("Offset");
         private readonly GUIContent glowInnerLabel = new GUIContent("Inner");
@@ -301,12 +295,11 @@ namespace OrchidSeal.Billboard.Editor
 
         private void GlowOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.FoldoutHeader(glowFoldoutLabel, ref showGlowOptions))
+            if (ShaderGuiUtility.MaterialKeywordFoldout(glowFoldoutLabel, ref showGlowOptions, material, "GLOW_ON"))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                var isOn = KeywordToggle(material, "GLOW_ON", glowEnabledLabel);
-                EditorGUI.BeginDisabledGroup(!isOn);
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("GLOW_ON"));
                 materialEditor.ShaderProperty(FindProperty("_GlowColor", properties), glowColorLabel);
                 materialEditor.ShaderProperty(FindProperty("_GlowOffset", properties), glowOffsetLabel);
                 materialEditor.ShaderProperty(FindProperty("_GlowInner", properties), glowInnerLabel);
@@ -347,7 +340,6 @@ namespace OrchidSeal.Billboard.Editor
 
         private bool showDistanceFadeOptions;
         private const string distanceFadeFoldoutLabel = "Distance Fade";
-        private readonly GUIContent distanceFadeEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent distanceFadeMinAlphaLabel = new GUIContent("Min Alpha");
         private readonly GUIContent distanceFadeMaxAlphaLabel = new GUIContent("Max Alpha");
         private readonly GUIContent distanceFadeMinLabel = new GUIContent("Min");
@@ -355,12 +347,11 @@ namespace OrchidSeal.Billboard.Editor
 
         private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.FoldoutHeader(distanceFadeFoldoutLabel, ref showDistanceFadeOptions))
+            if (ShaderGuiUtility.MaterialKeywordFoldout(distanceFadeFoldoutLabel, ref showDistanceFadeOptions, material, "DISTANCE_FADE_ON"))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                var isOn = KeywordToggle(material, "DISTANCE_FADE_ON", distanceFadeEnabledLabel);
-                EditorGUI.BeginDisabledGroup(!isOn);
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("DISTANCE_FADE_ON"));
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMinAlpha", properties), distanceFadeMinAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMaxAlpha", properties), distanceFadeMaxAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), distanceFadeMinLabel);
@@ -375,17 +366,17 @@ namespace OrchidSeal.Billboard.Editor
 
         private bool showSilhouetteOptions;
         private const string silhouetteFoldoutLabel = "Silhouette";
-        private readonly GUIContent silhouetteEnabledLabel = new GUIContent("Enabled");
         private readonly GUIContent silhouetteFadeAlphaLabel = new GUIContent("Fade Alpha");
 
         private void SilhouetteOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.FoldoutHeader(silhouetteFoldoutLabel, ref showSilhouetteOptions))
+            var wasOn = material.IsKeywordEnabled("SILHOUETTE_FADING_ON");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(silhouetteFoldoutLabel, ref showSilhouetteOptions, material, "SILHOUETTE_FADING_ON"))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                var wasOn = material.IsKeywordEnabled("SILHOUETTE_FADING_ON");
-                var isOn = KeywordToggle(material, "SILHOUETTE_FADING_ON", silhouetteEnabledLabel);
+                var isOn = material.IsKeywordEnabled("SILHOUETTE_FADING_ON");
                 if (wasOn != isOn)
                 {
                     material.SetShaderPassEnabled("ForwardBase", isOn);

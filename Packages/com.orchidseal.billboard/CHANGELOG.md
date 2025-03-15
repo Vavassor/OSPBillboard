@@ -3,6 +3,7 @@
 ## v0.4.0
 
 - Adds enable toggles to collapsible section headers in editor UI.
+- Adds preset buttons to the flipbook creator.
 
 ## v0.3.0
 

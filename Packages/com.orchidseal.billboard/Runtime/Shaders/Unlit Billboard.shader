@@ -23,7 +23,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         [Toggle(KEEP_CONSTANT_SCALING)] _KeepConstantScaling("Keep Constant Scaling", Int) = 0
         _ConstantScale("Constant Scale", Float) = 1
         
-        [Toggle(USE_FLIPBOOK)] _UseFlipbook("Enable Flipbook", Float) = 0
         _FlipbookTexArray("Texture Array", 2DArray) = "" {}
         _FlipbookTint("Tint", Color) = (1,1,1,1)
         _FlipbookScrollVelocity("Scroll Velocity (XY)", Vector) = (0, 0, 0, 0)
@@ -33,7 +32,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         [Toggle] _FlipbookUseManualFrame("Control Frame Manually", Float) = 0
         _FlipbookManualFrame("Manual Frame", Float) = 0
         
-        [Toggle(USE_DISTANCE_FADE)] _UseDistanceFade("Enable Distance Fade", Float) = 0
         _DistanceFadeMinAlpha("Min Alpha", Range(0, 1)) = 1
         _DistanceFadeMaxAlpha("Max Alpha", Range(0, 1)) = 0
         _DistanceFadeMin("Min Distance", Float) = 0

@@ -97,8 +97,8 @@ namespace OrchidSeal.Billboard.Editor
             BlendingOptions(materialEditor, properties, targetMaterial);
             BaseOptions(materialEditor, properties);
             TransformationOptions(materialEditor, properties);
-            FlipbookOptions(materialEditor, properties);
-            DistanceFadeOptions(materialEditor, properties);
+            FlipbookOptions(materialEditor, properties, targetMaterial);
+            DistanceFadeOptions(materialEditor, properties, targetMaterial);
             StencilOptions(materialEditor, properties);
 
             materialEditor.EnableInstancingField();
@@ -263,11 +263,9 @@ namespace OrchidSeal.Billboard.Editor
         
         // Flipbook................................................................................
         
-        private void FlipbookOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
+        private void FlipbookOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            var isFlipbookEnabledProperty = FindProperty("_UseFlipbook", properties);
-            
-            if (ShaderGuiUtility.MaterialPropertyFoldout(Styles.flipbookFoldoutLabel, ref showFlipbookOptions, isFlipbookEnabledProperty))
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.flipbookFoldoutLabel, ref showFlipbookOptions, material, "USE_FLIPBOOK"))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -281,7 +279,7 @@ namespace OrchidSeal.Billboard.Editor
                     FlipbookCreatorEditor.ShowWindow();
                 }
 
-                EditorGUI.BeginDisabledGroup(isFlipbookEnabledProperty.floatValue == 0.0f);
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_FLIPBOOK"));
                 materialEditor.TexturePropertySingleLine(Styles.flipbookLabel, flipbookProperty, FindProperty("_FlipbookTint", properties));
                 materialEditor.TextureScaleOffsetProperty(flipbookProperty);
                 ShaderGuiUtility.Vector2Property(FindProperty("_FlipbookScrollVelocity", properties), Styles.flipbookScrollVelocityLabel);
@@ -327,15 +325,13 @@ namespace OrchidSeal.Billboard.Editor
 
         // Distance Fade...........................................................................
 
-        private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
+        private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            var useDistanceFadeProp = FindProperty("_UseDistanceFade", properties);
-
-            if (ShaderGuiUtility.MaterialPropertyFoldout(Styles.distanceFadeFoldoutLabel, ref showDistanceFadeOptions, useDistanceFadeProp))
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.distanceFadeFoldoutLabel, ref showDistanceFadeOptions, material, "USE_DISTANCE_FADE"))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                EditorGUI.BeginDisabledGroup(useDistanceFadeProp.floatValue == 0.0f);
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_DISTANCE_FADE"));
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMinAlpha", properties), Styles.distanceFadeMinAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMaxAlpha", properties), Styles.distanceFadeMaxAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), Styles.distanceFadeMinLabel);

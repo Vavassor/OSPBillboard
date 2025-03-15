@@ -1,5 +1,7 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace OrchidSeal.Billboard.Editor
 {
@@ -34,52 +36,6 @@ namespace OrchidSeal.Billboard.Editor
             };
         }
         
-        public static void Vector2Property(MaterialProperty property, GUIContent name)
-        {
-            EditorGUI.BeginChangeCheck();
-            var vector2 = EditorGUILayout.Vector2Field(name, new Vector2(property.vectorValue.x, property.vectorValue.y), null);
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.vectorValue = new Vector4(vector2.x, vector2.y, property.vectorValue.z, property.vectorValue.w);
-            }
-        }
-        
-        public static void Vector3Property(MaterialProperty property, GUIContent name)
-        {
-            EditorGUI.BeginChangeCheck();
-            var vector3 = EditorGUILayout.Vector3Field(name, new Vector3(property.vectorValue.x, property.vectorValue.y, property.vectorValue.z), null);
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.vectorValue = new Vector4(vector3.x, vector3.y, vector3.z, property.vectorValue.w);
-            }
-        }
-
-        public static void Vector4Property(MaterialProperty property, GUIContent name, string[] labels)
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PrefixLabel(name);
-            EditorGUI.BeginChangeCheck();
-            EditorGUIUtility.labelWidth = 12;
-            var x = EditorGUILayout.FloatField(labels[0], property.vectorValue.x);
-            var y = EditorGUILayout.FloatField(labels[1], property.vectorValue.y);
-            var z = EditorGUILayout.FloatField(labels[2], property.vectorValue.z);
-            var w = EditorGUILayout.FloatField(labels[3], property.vectorValue.w);
-            EditorGUIUtility.labelWidth = 0;
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.vectorValue = new Vector4(x, y, z, w);
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        public static bool MaterialPropertyFoldout(string title, ref bool isCollapsed, MaterialProperty property)
-        {
-            var boolValue = property.floatValue != 0.0f;
-            FoldoutHeader(title, ref isCollapsed, ref boolValue);
-            property.floatValue = boolValue ? 1.0f : 0.0f;
-            return isCollapsed;
-        }
-
         public static bool FoldoutHeader(string title, ref bool isShown)
         {
             var backgroundRect = GUILayoutUtility.GetRect(1f, Styles.headerHeight);
@@ -154,6 +110,58 @@ namespace OrchidSeal.Billboard.Editor
             GUILayout.Space(isShown ? 6 : 2);
 
             return isShown;
+        }
+        
+        public static bool MaterialKeywordFoldout(string title, ref bool isCollapsed, Material material, string keyword, bool isReversed = false)
+        {
+            var isToggleOn = material.IsKeywordEnabled(keyword);
+            if (isReversed) isToggleOn = !isToggleOn;
+            EditorGUI.BeginChangeCheck();
+            FoldoutHeader(title, ref isCollapsed, ref isToggleOn);
+            if (!EditorGUI.EndChangeCheck()) return isCollapsed;
+            var localKeyword = new LocalKeyword(material.shader, keyword);
+            if (!localKeyword.isValid) return isToggleOn;
+            material.SetKeyword(localKeyword, isToggleOn);
+            EditorUtility.SetDirty(material);
+            return isCollapsed;
+        }
+        
+        public static void Vector2Property(MaterialProperty property, GUIContent name)
+        {
+            EditorGUI.BeginChangeCheck();
+            var vector2 = EditorGUILayout.Vector2Field(name, new Vector2(property.vectorValue.x, property.vectorValue.y), null);
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.vectorValue = new Vector4(vector2.x, vector2.y, property.vectorValue.z, property.vectorValue.w);
+            }
+        }
+        
+        public static void Vector3Property(MaterialProperty property, GUIContent name)
+        {
+            EditorGUI.BeginChangeCheck();
+            var vector3 = EditorGUILayout.Vector3Field(name, new Vector3(property.vectorValue.x, property.vectorValue.y, property.vectorValue.z), null);
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.vectorValue = new Vector4(vector3.x, vector3.y, vector3.z, property.vectorValue.w);
+            }
+        }
+
+        public static void Vector4Property(MaterialProperty property, GUIContent name, string[] labels)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PrefixLabel(name);
+            EditorGUI.BeginChangeCheck();
+            EditorGUIUtility.labelWidth = 12;
+            var x = EditorGUILayout.FloatField(labels[0], property.vectorValue.x);
+            var y = EditorGUILayout.FloatField(labels[1], property.vectorValue.y);
+            var z = EditorGUILayout.FloatField(labels[2], property.vectorValue.z);
+            var w = EditorGUILayout.FloatField(labels[3], property.vectorValue.w);
+            EditorGUIUtility.labelWidth = 0;
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.vectorValue = new Vector4(x, y, z, w);
+            }
+            EditorGUILayout.EndHorizontal();
         }
     }
 }
