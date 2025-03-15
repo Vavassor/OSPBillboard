@@ -79,6 +79,7 @@ struct VertexOutputAdd
 
 UNITY_DECLARE_TEX2D(_MainTex);
 float4 _MainTex_ST;
+float4 _MainTex_TexelSize;
 fixed4 _Color;
 
 half _Glossiness;
@@ -94,6 +95,11 @@ half3 _EmissionColor;
 // Alpha Test
 float _AlphaCutoff;
 
+// Transformation
+float2 _Position;
+float _RotationRoll;
+float2 _Scale;
+
 VertexOutputBase VertexForwardBase(VertexInput v)
 {
     VertexOutputBase o;
@@ -102,13 +108,16 @@ VertexOutputBase VertexForwardBase(VertexInput v)
     UNITY_INITIALIZE_OUTPUT(VertexOutputBase, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+    float4 positionOs = v.vertex;
+    positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
+
     float3 normalWs;
     float3 positionWs;
     #ifdef USE_NORMAL_MAP
     float3 tangentWs;
-    BillboardWithNormalTangentWs(v.vertex, v.normal, v.tangent, positionWs, normalWs, tangentWs);
+    BillboardWithNormalTangentWs(positionOs, v.normal, v.tangent, positionWs, normalWs, tangentWs);
     #else
-    BillboardWithNormalWs(v.vertex, v.normal, positionWs, normalWs);
+    BillboardWithNormalWs(positionOs, v.normal, positionWs, normalWs);
     #endif // USE_NORMAL_MAP
 
     o.positionCs = UnityWorldToClipPos(float4(positionWs, 1));
@@ -147,6 +156,10 @@ VertexOutputBase VertexForwardBase(VertexInput v)
 fixed4 FragmentForwardBase(VertexOutputBase i) : SV_Target
 {
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
+    #if defined(USE_PIXEL_SHARPEN)
+    i.uv0.xy = SharpenPixelUv(i.uv0.xy, _MainTex_TexelSize);
+    #endif // USE_PIXEL_SHARPEN
 
     float3 positionWs = i.positionWs.xyz;
     float3 viewDirectionWs = -normalize(i.viewDirectionWs.xyz);
@@ -206,13 +219,16 @@ VertexOutputAdd VertexForwardAdd(VertexInput v)
     UNITY_INITIALIZE_OUTPUT(VertexOutputAdd, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+    float4 positionOs = v.vertex;
+    positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
+
     float3 normalWs;
     float3 positionWs;
     #ifdef USE_NORMAL_MAP
     float3 tangentWs;
-    BillboardWithNormalTangentWs(v.vertex, v.normal, v.tangent, positionWs, normalWs, tangentWs);
+    BillboardWithNormalTangentWs(positionOs, v.normal, v.tangent, positionWs, normalWs, tangentWs);
     #else
-    BillboardWithNormalWs(v.vertex, v.normal, positionWs, normalWs);
+    BillboardWithNormalWs(positionOs, v.normal, positionWs, normalWs);
     #endif // USE_NORMAL_MAP
 
     o.positionCs = UnityWorldToClipPos(positionWs);
@@ -248,6 +264,10 @@ VertexOutputAdd VertexForwardAdd(VertexInput v)
 fixed4 FragmentForwardAdd(VertexOutputAdd i) : SV_Target
 {
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
+    #if defined(USE_PIXEL_SHARPEN)
+    i.uv0.xy = SharpenPixelUv(i.uv0.xy, _MainTex_TexelSize);
+    #endif // USE_PIXEL_SHARPEN
 
     float3 positionWs = i.positionWs.xyz;
     float3 viewDirectionWs = -normalize(i.viewDirectionWs);

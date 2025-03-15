@@ -30,15 +30,6 @@ namespace OrchidSeal.Billboard.Editor
             SilhouetteOptions(materialEditor, properties, targetMaterial);
             DebugOptions(materialEditor, properties, targetMaterial);
         }
-
-        private static void OptionalProperty(MaterialEditor materialEditor, MaterialProperty[] properties, string name, GUIContent label)
-        {
-            var prop = FindProperty(name, properties, false);
-            if (prop != null)
-            {
-                materialEditor.ShaderProperty(prop, label);
-            }
-        }
         
         private static bool MaterialKeywordFoldout(string title, ref bool isCollapsed, Material material, string[] keywords, string defaultKeyword)
         {
@@ -101,7 +92,7 @@ namespace OrchidSeal.Billboard.Editor
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
                 materialEditor.ShaderProperty(FindProperty("_FaceColor", properties), faceColorLabel);
-                OptionalProperty(materialEditor, properties, "_FaceSoftness", faceSoftnessLabel);
+                ShaderGuiUtility.OptionalProperty(materialEditor, properties, "_FaceSoftness", faceSoftnessLabel);
                 materialEditor.ShaderProperty(FindProperty("_FaceDilate", properties), faceDilationLabel);
                 
                 EditorGUILayout.EndVertical();

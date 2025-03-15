@@ -106,8 +106,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             #include "Billboard Common.cginc"
             #include "OSP Billboard.cginc"
 
-            #define DEGREES_TO_RADIANS 0.0174532925
-
             // Blending.....................................................................
 
             #define BLEND_MODE_LERP 0
@@ -240,22 +238,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             //     return atan2(-m[2][1] / scale.z, m[2][2] / scale.z);
             // }
 
-            float2 Rotate2D(float2 v, float angle)
-            {
-                float s, c;
-                sincos(angle, s, c);
-                return float2(c * v.x - s * v.y, s * v.x + c * v.y);
-            }
-
-            // https://github.com/cnlohr/shadertrixx/blob/main/README.md#lyuma-beautiful-retro-pixels-technique
-            float2 SharpenPixelUv(float2 uv, float4 texelSize)
-            {
-                float2 coord = uv.xy * texelSize.zw;
-                float2 fr = frac(coord + 0.5);
-                float2 fw = max(abs(ddx(coord)), abs(ddy(coord)));
-                return uv.xy + (saturate((fr-(1-fw)*0.5)/fw) - fr) * texelSize.xy;
-            }
-
             // Shader Functions....................................................................
 
             v2f vert(appdata v)
@@ -266,7 +248,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 UNITY_INITIALIZE_OUTPUT(v2f, o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-                float3 positionOs = float3(_Scale, 1) * v.vertex.xyz;
+                float3 positionOs = v.vertex.xyz;
 
                 #if KEEP_CONSTANT_SCALING || USE_DISTANCE_FADE
                     float distanceWs = length(unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition());
@@ -281,11 +263,10 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #else
                     positionOs *= length(mul(unity_ObjectToWorld, float4(0, 0, 1, 0)).xyz);
                 #endif
-                
-                positionOs.xy = Rotate2D(positionOs.xy, DEGREES_TO_RADIANS * _RotationRoll);
+
+                positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
                 // TODO: Getting rotation from the model matrix breaks when parent objects are rotated/scaled.
                 // positionOs.xy = Rotate2D(positionOs.xy, GetRoll(unity_ObjectToWorld, objectScale));
-                positionOs.xy += _Position;
 
                 o.pos = BillboardCs(float4(positionOs, 1));
                 o.uv0 = TRANSFORM_TEX(v.uv, _MainTex);

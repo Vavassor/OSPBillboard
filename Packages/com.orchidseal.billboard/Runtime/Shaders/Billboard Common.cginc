@@ -39,4 +39,31 @@ fixed TransferFog(float4 clipPosition)
 #define OSP_TRANSFER_FOG(clipPosition, output)
 #endif
 
+// Pixel Sharpen...............................................................
+
+// https://github.com/cnlohr/shadertrixx/blob/main/README.md#lyuma-beautiful-retro-pixels-technique
+float2 SharpenPixelUv(float2 uv, float4 texelSize)
+{
+    float2 coord = uv.xy * texelSize.zw;
+    float2 fr = frac(coord + 0.5);
+    float2 fw = max(abs(ddx(coord)), abs(ddy(coord)));
+    return uv.xy + (saturate((fr-(1-fw)*0.5)/fw) - fr) * texelSize.xy;
+}
+
+// Transformation..............................................................
+
+#define DEGREES_TO_RADIANS 0.0174532925
+
+float2 Rotate2D(float2 v, float angle)
+{
+    float s, c;
+    sincos(angle, s, c);
+    return float2(c * v.x - s * v.y, s * v.x + c * v.y);
+}
+
+float2 Transform2d(float2 position, float2 translation, float rotationDegrees, float2 scale)
+{
+    return scale * Rotate2D(position.xy, DEGREES_TO_RADIANS * rotationDegrees) + translation;
+}
+
 #endif // BILLBOARD_COMMON_CGINC_

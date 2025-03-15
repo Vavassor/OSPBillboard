@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 namespace OrchidSeal.Billboard.Editor
 {
-    public class LitBillboardEditor : ShaderGUI
+    public class LitBillboardEditor : BaseBillboardEditor
     {
         private enum RenderMode
         {
@@ -34,6 +34,7 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent blendOperationLabel = new GUIContent("Blend Operation");
             public static readonly GUIContent zTestLabel = new GUIContent("Depth Test");
             public static readonly GUIContent zWriteLabel = new GUIContent("Depth Write");
+            public static readonly GUIContent usePixelSharpenLabel = new("Sharp Pixels", "Blocky pixels with smooth edges. Set filtering on textures to Bilinear or Trilinear when using this.");
             
             // Base option labels
             public const string baseFoldoutLabel = "Base";
@@ -45,10 +46,6 @@ namespace OrchidSeal.Billboard.Editor
             // Emission option labels
             public const string emissionFoldoutLabel = "Emission";
             public static readonly GUIContent emissionMapLabel = new("Emission");
-            
-            // Transformation option labels
-            public const string transformationFoldoutLabel = "Transformation";
-            public static readonly GUIContent billboardModeLabel = new("Billboard Mode", "None:\nNo billboarding.\n\nSpherical:\nFace the camera from any direction.\n\nCylindrical World:\nFace the camera, turning around the world Y axis. Use to appear grounded or upright, like for trees or fire.\n\nCylindrical Local\nFace the camera, turning around the object Y axis.");
         }
         
         private static readonly int BumpMap = Shader.PropertyToID("_BumpMap");
@@ -57,7 +54,6 @@ namespace OrchidSeal.Billboard.Editor
         private bool showBaseOptions = true;
         private bool showBlendingOptions = true;
         private bool showEmissionOptions;
-        private bool showTransformationOptions = true;
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -67,6 +63,7 @@ namespace OrchidSeal.Billboard.Editor
             BaseOptions(materialEditor, properties, targetMaterial);
             EmissionOptions(materialEditor, properties, targetMaterial);
             TransformationOptions(materialEditor, properties);
+            StencilOptions(materialEditor, properties);
             
             materialEditor.EnableInstancingField();
         }
@@ -117,6 +114,7 @@ namespace OrchidSeal.Billboard.Editor
                 
                 EditorGUILayout.Space(8);
                 materialEditor.RenderQueueField();
+                materialEditor.ShaderProperty(FindProperty("_UsePixelSharpen", properties), Styles.usePixelSharpenLabel);
                 
                 EditorGUILayout.EndVertical();
             }
@@ -264,21 +262,6 @@ namespace OrchidSeal.Billboard.Editor
                 {
                     SetKeyword(targetMaterial, "USE_EMISSION_MAP", targetMaterial.GetTexture(EmissionMap));
                 }
-                
-                EditorGUILayout.EndVertical();
-            }
-        }
-        
-        private void TransformationOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
-        {
-            if (ShaderGuiUtility.FoldoutHeader(Styles.transformationFoldoutLabel, ref showTransformationOptions))
-            {
-                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
-                
-                materialEditor.ShaderProperty(FindProperty("_Billboard_Mode", properties), Styles.billboardModeLabel);
-                // ShaderGuiUtility.Vector2Property(FindProperty("_Position", properties), positionLabel);
-                // materialEditor.ShaderProperty(FindProperty("_RotationRoll", properties), rotationRollLabel);
-                // ShaderGuiUtility.Vector2Property(FindProperty("_Scale", properties), scaleLabel);
                 
                 EditorGUILayout.EndVertical();
             }

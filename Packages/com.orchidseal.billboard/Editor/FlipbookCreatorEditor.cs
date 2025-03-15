@@ -29,7 +29,7 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent createTextureArraysButtonLabel = new ("Create Texture Arrays");
             public static readonly GUIContent deselectOutputFolderButtonLabel = new ("Remove");
             public static readonly GUIContent filterModeFieldLabel = new ("Filter Mode");
-            public const string filterModePointTip = "Pixel art may look better using the \"Sharp pixels\" option in the Unlit Billboard shader and setting this filter mode to Bilinear/Trilinear.";
+            public const string filterModePointTip = "Pixel art may look better using the \"Sharp pixels\" option in the Lit/Unlit Billboard shader and setting this filter mode to Bilinear or Trilinear.";
             public static readonly GUIContent outputFolderUnspecifiedMessage = new ("Files are output to the same folder as the source textures if no folder is specified.");
             public static readonly GUIContent outputFolderFoldoutHeader = new ("Output Folder");
             public static readonly GUIContent pixelArtPresetButtonLabel = new ("Pixel Art");

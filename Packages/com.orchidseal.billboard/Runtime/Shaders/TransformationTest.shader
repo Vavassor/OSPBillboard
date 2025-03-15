@@ -1,4 +1,4 @@
-Shader "Custom/TransformationTest"
+Shader "Hidden/Custom/TransformationTest"
 {
     Properties
     {

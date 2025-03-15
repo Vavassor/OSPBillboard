@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace OrchidSeal.Billboard.Editor
 {
-    public class BillboardEditor : ShaderGUI
+    public class BillboardEditor : BaseBillboardEditor
     {
         private enum RenderMode
         {
@@ -52,40 +52,19 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent flipbookUseManualFrameLabel = new ("Control Frame Manually");
             public static readonly GUIContent flipbookManualFrameLabel = new ("Manual Frame");
             
-            // Transformation
-            public const string transformationFoldoutLabel = "Transformation";
-            public static readonly GUIContent positionLabel = new("Position");
-            public static readonly GUIContent rotationRollLabel = new ("Rotation Roll");
-            public static readonly GUIContent scaleLabel = new ("Scale");
-            public static readonly GUIContent billboardModeLabel = new ("Billboard Mode");
-            public static readonly GUIContent useNonUniformScaleLabel = new ("Use Non Uniform Object Scale");
-            public static readonly GUIContent keepConstantScalingLabel = new ("Keep Constant Scaling");
-            public static readonly GUIContent constantScaleLabel = new ("Constant Scale");
-            
             // Distance Fade
             public const string distanceFadeFoldoutLabel = "Distance Fade";
             public static readonly GUIContent distanceFadeMinAlphaLabel = new ("Min Alpha");
             public static readonly GUIContent distanceFadeMaxAlphaLabel = new ("Max Alpha");
             public static readonly GUIContent distanceFadeMinLabel = new ("Min");
             public static readonly GUIContent distanceFadeMaxLabel = new ("Max");
-            
-            // Stencil
-            public const string stencilFoldoutLabel = "Stencil";
-            public static readonly GUIContent stencilReferenceLabel = new ("Reference");
-            public static readonly GUIContent stencilReadMaskLabel = new ("Read Mask");
-            public static readonly GUIContent stencilWriteMaskLabel = new ("Write Mask");
-            public static readonly GUIContent stencilComparisonLabel = new ("Comparison");
-            public static readonly GUIContent stencilPassLabel = new ("Pass");
-            public static readonly GUIContent stencilFailLabel = new ("Fail");
-            public static readonly GUIContent stencilZFailLabel = new ("ZFail");
         }
 
         private bool showBlendingOptions = true;
         private bool showBaseOptions = true;
         private bool showFlipbookOptions = true;
-        private bool showTransformationOptions = true;
+        
         private bool showDistanceFadeOptions;
-        private bool showStencilOptions;
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -298,31 +277,7 @@ namespace OrchidSeal.Billboard.Editor
                 EditorGUILayout.EndVertical();
             }
         }
-
-        // Transformation..........................................................................
-
-        private void TransformationOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
-        {
-            if (ShaderGuiUtility.FoldoutHeader(Styles.transformationFoldoutLabel, ref showTransformationOptions))
-            {
-                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
-                
-                var keepConstantScalingProp = FindProperty("_KeepConstantScaling", properties);
-
-                materialEditor.ShaderProperty(FindProperty("_Billboard_Mode", properties), Styles.billboardModeLabel);
-                ShaderGuiUtility.Vector2Property(FindProperty("_Position", properties), Styles.positionLabel);
-                materialEditor.ShaderProperty(FindProperty("_RotationRoll", properties), Styles.rotationRollLabel);
-                ShaderGuiUtility.Vector2Property(FindProperty("_Scale", properties), Styles.scaleLabel);
-                materialEditor.ShaderProperty(FindProperty("_UseNonUniformScale", properties), Styles.useNonUniformScaleLabel);
-                materialEditor.ShaderProperty(keepConstantScalingProp, Styles.keepConstantScalingLabel);
-                EditorGUI.BeginDisabledGroup(keepConstantScalingProp.floatValue == 0.0f);
-                materialEditor.ShaderProperty(FindProperty("_ConstantScale", properties), Styles.constantScaleLabel);
-                EditorGUI.EndDisabledGroup();
-                
-                EditorGUILayout.EndVertical();
-            }
-        }
-
+        
         // Distance Fade...........................................................................
 
         private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
@@ -337,26 +292,6 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), Styles.distanceFadeMinLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMax", properties), Styles.distanceFadeMaxLabel);
                 EditorGUI.EndDisabledGroup();
-                
-                EditorGUILayout.EndVertical();
-            }
-        }
-
-        // Stencil.................................................................................
-
-        private void StencilOptions(MaterialEditor materialEditor, MaterialProperty[] properties)
-        {
-            if (ShaderGuiUtility.FoldoutHeader(Styles.stencilFoldoutLabel, ref showStencilOptions))
-            {
-                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
-                
-                materialEditor.ShaderProperty(FindProperty("_StencilRef", properties), Styles.stencilReferenceLabel);
-                materialEditor.ShaderProperty(FindProperty("_StencilReadMask", properties), Styles.stencilReadMaskLabel);
-                materialEditor.ShaderProperty(FindProperty("_StencilWriteMask", properties), Styles.stencilWriteMaskLabel);
-                materialEditor.ShaderProperty(FindProperty("_StencilComp", properties), Styles.stencilComparisonLabel);
-                materialEditor.ShaderProperty(FindProperty("_StencilPass", properties), Styles.stencilPassLabel);
-                materialEditor.ShaderProperty(FindProperty("_StencilFail", properties), Styles.stencilFailLabel);
-                materialEditor.ShaderProperty(FindProperty("_StencilZFail", properties), Styles.stencilZFailLabel);
                 
                 EditorGUILayout.EndVertical();
             }

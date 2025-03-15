@@ -126,6 +126,16 @@ namespace OrchidSeal.Billboard.Editor
             return isCollapsed;
         }
         
+        public static void OptionalProperty(MaterialEditor materialEditor, MaterialProperty[] properties, string name, GUIContent label)
+        {
+            foreach (var prop in properties)
+            {
+                if (prop == null || prop.name != name) continue;
+                materialEditor.ShaderProperty(prop, label);
+                return;
+            }
+        }
+        
         public static void Vector2Property(MaterialProperty property, GUIContent name)
         {
             EditorGUI.BeginChangeCheck();

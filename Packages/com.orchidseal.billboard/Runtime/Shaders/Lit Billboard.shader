@@ -3,6 +3,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
     Properties
     {
         [HideInInspector] [Enum(Opaque,0,Cutout,1,Transparent,2,Premultiply,3,Additive,4,Custom,5)] _RenderMode("Render Mode", Int) = 2
+        [Toggle(USE_PIXEL_SHARPEN)] _UsePixelSharpen("Sharp Pixels", Float) = 0
         
         _Color ("Tint", Color) = (1,1,1,1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
@@ -14,6 +15,9 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
         [Toggle] _AlphaToMask("Alpha To Mask", Float) = 0
         
         [KeywordEnum(None, Spherical, Cylindrical_World, Cylindrical_Local)] _Billboard_Mode("Billboard Mode", Float) = 1
+        _Position("Position (XY)", Vector) = (0, 0, 0, 0)
+        _RotationRoll("Rotation", Float) = 0
+        _Scale("Scale (XY)", Vector) = (1, 1, 0, 0)
         
         _BumpScale("Scale", Float) = 1.0
         [NoScaleOffset] [Normal] _BumpMap("Normal Map", 2D) = "bump" {}
@@ -87,6 +91,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
 
             #include "UnityCG.cginc"
             #include "OSP Billboard.cginc"
+            #include "Billboard Common.cginc"
 
             #if defined(CAST_TRANSPARENT_SHADOWS) && defined(UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS)
             #define UNITY_STANDARD_USE_DITHER_MASK 1
@@ -97,6 +102,11 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             float4 _Color;
 
             float _AlphaCutoff;
+
+            // Transformation
+            float2 _Position;
+            float _RotationRoll;
+            float2 _Scale;
 
             #if defined(UNITY_STANDARD_USE_DITHER_MASK)
             sampler3D _DitherMaskLOD;
@@ -121,7 +131,9 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             void vertShadowCaster(VertexInputShadowCaster v, out VertexOutputShadowCaster o, out float4 opos: SV_POSITION)
             {
                 UNITY_SETUP_INSTANCE_ID(v);
-                v.vertex = mul(unity_WorldToObject, float4(BillboardWs(v.vertex), 1));
+                float4 positionOs = v.vertex;
+                positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
+                v.vertex = mul(unity_WorldToObject, float4(BillboardWs(positionOs), 1));
                 o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
                 o.alpha = v.color.a;
                 TRANSFER_SHADOW_CASTER_NOPOS(o,opos);
@@ -168,6 +180,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             #pragma shader_feature_local USE_NORMAL_MAP
             #pragma shader_feature_local USE_EMISSION_MAP
             #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
+            #pragma shader_feature_local USE_PIXEL_SHARPEN
             
             #pragma vertex VertexForwardBase
             #pragma fragment FragmentForwardBase
@@ -193,6 +206,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             #pragma shader_feature_local USE_ALPHA_TEST
             #pragma shader_feature_local USE_NORMAL_MAP
             #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
+            #pragma shader_feature_local USE_PIXEL_SHARPEN
             
             #pragma vertex VertexForwardAdd
             #pragma fragment FragmentForwardAdd
