@@ -32,6 +32,9 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         [Toggle] _FlipbookUseManualFrame("Control Frame Manually", Float) = 0
         _FlipbookManualFrame("Manual Frame", Float) = 0
         
+        _OutlineColor("Outline Color", Color) = (1, 1, 1, 1)
+        _OutlineWidth("Outline Width", Float) = 1
+        
         _DistanceFadeMinAlpha("Min Alpha", Range(0, 1)) = 1
         _DistanceFadeMaxAlpha("Max Alpha", Range(0, 1)) = 0
         _DistanceFadeMin("Min Distance", Float) = 0
@@ -99,6 +102,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             #pragma shader_feature_local _BILLBOARD_MODE_NONE _BILLBOARD_MODE_SPHERICAL _BILLBOARD_MODE_CYLINDRICAL_WORLD _BILLBOARD_MODE_CYLINDRICAL_LOCAL
             #pragma shader_feature_local USE_NON_UNIFORM_SCALE
             #pragma shader_feature_local KEEP_CONSTANT_SCALING
+            #pragma shader_feature_local USE_OUTLINE
             #pragma shader_feature_local USE_DISTANCE_FADE
             #pragma shader_feature_local USE_PIXEL_SHARPEN
 
@@ -124,6 +128,18 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                     float3 resultRgb = (s.a * s.rgb + (1.0 - s.a) * d.a * d.rgb) / resultAlpha;
                     return float4(resultRgb, resultAlpha);
                 }
+                case BLEND_MODE_ADD: return s + d;
+                case BLEND_MODE_MULTIPLY: return s * d;
+                default: return 0;
+                }
+            }
+
+            float BlendAlpha(float s, float d, float blendMode)
+            {
+                switch (blendMode)
+                {
+                case BLEND_MODE_LERP: return s;
+                case BLEND_MODE_TRANSPARENT: return s + d * (1.0 - s);
                 case BLEND_MODE_ADD: return s + d;
                 case BLEND_MODE_MULTIPLY: return s * d;
                 default: return 0;
@@ -202,6 +218,10 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             float _FlipbookUseManualFrame;
             float _FlipbookManualFrame;
 
+            // Outline
+            float4 _OutlineColor;
+            float _OutlineWidth;
+
             // Distance Fade
             float _DistanceFadeMinAlpha;
             float _DistanceFadeMaxAlpha;
@@ -233,10 +253,38 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 return scale;
             }
 
-            // float GetRoll(float4x4 m, float3 scale)
-            // {
-            //     return atan2(-m[2][1] / scale.z, m[2][2] / scale.z);
-            // }
+            // Outline.............................................................................
+            
+            float SampleAlpha(float2 uv0, float4 uv1)
+            {
+                float alpha = _Color.a * UNITY_SAMPLE_TEX2D(_MainTex, uv0).a;
+
+                #if defined(USE_FLIPBOOK)
+                    float flipbookAlpha = UNITY_SAMPLE_TEX2DARRAY(_FlipbookTexArray, float3(uv1.xy, floor(uv1.z))).a;
+
+                    #if defined(USE_FLIPBOOK_SMOOTHING)
+                        float flipbookAlpha2 = UNITY_SAMPLE_TEX2DARRAY(_FlipbookTexArray, uv1.xyw).a;
+                        flipbookAlpha = lerp(flipbookAlpha, flipbookAlpha2, frac(uv1.z));
+                    #endif
+                
+                    alpha = BlendAlpha(_FlipbookTint.a * flipbookAlpha, alpha, _FlipbookBlendMode);
+                #endif
+
+                return alpha;
+            }
+
+            float GetOutline(float2 uv0, float4 uv1, float width, float baseAlpha)
+            {
+                float2 t0 = _MainTex_TexelSize.xy * width;
+                float2 t1 = _FlipbookTexArray_TexelSize.xy * width;
+                float4 offsets0 = float4(t0.x, t0.y, -t0.x, -t0.y);
+                float4 offsets1 = float4(t1.x, t1.y, -t1.x, -t1.y);
+                float a0 = SampleAlpha(uv0 + offsets0.xy, float4(uv1.xy + offsets1.xy, uv1.zw));
+                float a1 = SampleAlpha(uv0 + offsets0.xw, float4(uv1.xy + offsets1.xw, uv1.zw));
+                float a2 = SampleAlpha(uv0 + offsets0.zw, float4(uv1.xy + offsets1.zw, uv1.zw));
+                float a3 = SampleAlpha(uv0 + offsets0.zy, float4(uv1.xy + offsets1.zy, uv1.zw));
+                return saturate(a0 + a1 + a2 + a3) - baseAlpha;
+            }
 
             // Shader Functions....................................................................
 
@@ -265,8 +313,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #endif
 
                 positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
-                // TODO: Getting rotation from the model matrix breaks when parent objects are rotated/scaled.
-                // positionOs.xy = Rotate2D(positionOs.xy, GetRoll(unity_ObjectToWorld, objectScale));
 
                 o.pos = BillboardCs(float4(positionOs, 1));
                 o.uv0 = TRANSFORM_TEX(v.uv, _MainTex);
@@ -282,7 +328,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #endif
 
                 OSP_TRANSFER_FOG(o,o.pos);
-
+                
                 return o;
             }
 
@@ -317,6 +363,10 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
 
                     flipbookColor.rgb = TO_SHADING_COLOR_SPACE(flipbookColor.rgb);
                     col = BlendColor(_FlipbookTint * flipbookColor, col, _FlipbookBlendMode);
+                #endif
+
+                #ifdef USE_OUTLINE
+                col += _OutlineColor * GetOutline(i.uv0, i.uv1, _OutlineWidth, col.a);
                 #endif
 
                 #ifdef USE_DISTANCE_FADE

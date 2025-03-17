@@ -22,8 +22,8 @@ namespace OrchidSeal.Billboard.Editor
                 margin = new RectOffset(0, 0, 0, 12),
             };
             
-            // Blending option labels
-            public const string blendingFoldoutLabel = "Blending";
+            // Render option labels
+            public const string renderFoldoutLabel = "Rendering";
             public static readonly GUIContent renderModeLabel = new ("Render Mode", "Opaque:\nCannot be seen through.\n\nCutout:\nCut holes in geometry by discarding any pixel whose combined alpha is below a cutoff threshold.\n\nTransparent:\nSmoothly blended transparency that uses the combined alpha values of pixels.\n\nPremultiply:\nTransparency using colors that are premultiplied with the alpha value, which can improve the appearance of soft edges.\n\nAdditive:\nGlowing transparency. Add the numbers for the two colors together.\n\nCustom:\nControl all blending settings separately.");
             public static readonly GUIContent useAlphaTestLabel = new ("Use Alpha Test");
             public static readonly GUIContent alphaCutoffLabel = new ("Alpha Cutoff");
@@ -52,6 +52,11 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent flipbookUseManualFrameLabel = new ("Control Frame Manually");
             public static readonly GUIContent flipbookManualFrameLabel = new ("Manual Frame");
             
+            // Outline option labels
+            public const string outlineFoldoutLabel = "Outline";
+            public static readonly GUIContent outlineColorLabel = new ("Color");
+            public static readonly GUIContent outlineWidthLabel = new ("Width");
+            
             // Distance Fade
             public const string distanceFadeFoldoutLabel = "Distance Fade";
             public static readonly GUIContent distanceFadeMinAlphaLabel = new ("Min Alpha");
@@ -60,10 +65,10 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent distanceFadeMaxLabel = new ("Max");
         }
 
-        private bool showBlendingOptions = true;
+        private bool showRenderOptions = true;
         private bool showBaseOptions = true;
         private bool showFlipbookOptions = true;
-        
+        private bool showOutlineOptions;
         private bool showDistanceFadeOptions;
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -74,19 +79,20 @@ namespace OrchidSeal.Billboard.Editor
             var targetMaterial = materialEditor.target as Material;
 
             AboutLinks();
-            BlendingOptions(materialEditor, properties, targetMaterial);
+            RenderOptions(materialEditor, properties, targetMaterial);
             BaseOptions(materialEditor, properties);
             TransformationOptions(materialEditor, properties);
             FlipbookOptions(materialEditor, properties, targetMaterial);
+            OutlineOptions(materialEditor, properties, targetMaterial);
             DistanceFadeOptions(materialEditor, properties, targetMaterial);
             StencilOptions(materialEditor, properties);
 
             materialEditor.EnableInstancingField();
         }
 
-        private void BlendingOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
+        private void RenderOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
         {
-            if (ShaderGuiUtility.FoldoutHeader(Styles.blendingFoldoutLabel, ref showBlendingOptions))
+            if (ShaderGuiUtility.FoldoutHeader(Styles.renderFoldoutLabel, ref showRenderOptions))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -275,6 +281,23 @@ namespace OrchidSeal.Billboard.Editor
 
                 EditorGUI.EndDisabledGroup();
 
+                EditorGUILayout.EndVertical();
+            }
+        }
+        
+        // Outline.................................................................................
+
+        private void OutlineOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
+        {
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.outlineFoldoutLabel, ref showOutlineOptions, material, "USE_OUTLINE"))
+            {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_OUTLINE"));
+                materialEditor.ShaderProperty(FindProperty("_OutlineColor", properties), Styles.outlineColorLabel);
+                materialEditor.ShaderProperty(FindProperty("_OutlineWidth", properties), Styles.outlineWidthLabel);
+                EditorGUI.EndDisabledGroup();
+                
                 EditorGUILayout.EndVertical();
             }
         }

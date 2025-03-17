@@ -35,6 +35,56 @@ namespace OrchidSeal.Billboard.Editor
                 }
             };
         }
+
+        public static bool DrawControl(Rect rect, int id, GUIContent content, GUIStyle style, bool isOn)
+        {
+            var current = Event.current;
+            switch (current.type)
+            {
+                case EventType.MouseDown:
+                    if (rect.Contains(current.mousePosition))
+                    {
+                        GUIUtility.hotControl = id;
+                        current.Use();
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (GUIUtility.hotControl == id)
+                    {
+                        current.Use();
+                    }
+                    break;
+                case EventType.MouseUp:
+                    if (GUIUtility.hotControl == id)
+                    {
+                        GUIUtility.hotControl = -1;
+                        current.Use();
+                        if (rect.Contains(current.mousePosition))
+                        {
+                            GUI.changed = true;
+                            return !isOn;
+                        }
+                    }
+                    break;
+                case EventType.KeyDown:
+                {
+                    var flag = current.alt || current.shift || current.command || current.control;
+                    if ((current.keyCode == KeyCode.Space || current.keyCode == KeyCode.Return ||
+                         current.keyCode == KeyCode.KeypadEnter) && !flag && GUIUtility.keyboardControl == id)
+                    {
+                        current.Use();
+                        GUI.changed = true;
+                        return !isOn;
+                    }
+                    break;
+                }
+                case EventType.Repaint:
+                    style.Draw(rect, content, id, false, rect.Contains(current.mousePosition));
+                    break;
+            }
+
+            return isOn;
+        }
         
         public static bool FoldoutHeader(string title, ref bool isShown)
         {
