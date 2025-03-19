@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - FLIP_FACING_HORIZONTAL
   - USE_ALPHA_TEST
   - USE_FLIPBOOK
   - USE_NON_UNIFORM_SCALE
@@ -91,6 +92,7 @@ Material:
     - _DistanceFadeMin: 0
     - _DistanceFadeMinAlpha: 1
     - _DstBlend: 0
+    - _FlipFacingHorizontal: 1
     - _FlipbookBlendMode: 0
     - _FlipbookFramesPerSecond: 10
     - _FlipbookManualFrame: 0

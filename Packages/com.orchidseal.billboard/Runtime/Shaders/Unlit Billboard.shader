@@ -22,6 +22,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         [Toggle(USE_NON_UNIFORM_SCALE)] _UseNonUniformScale("Use Non-Uniform Object Scale", Float) = 1
         [Toggle(KEEP_CONSTANT_SCALING)] _KeepConstantScaling("Keep Constant Scaling", Int) = 0
         _ConstantScale("Constant Scale", Float) = 1
+        [Toggle(FLIP_FACING_HORIZONTAL)] _FlipFacingHorizontal("Flip Facing Horizontal", Float) = 0
         
         _FlipbookTexArray("Texture Array", 2DArray) = "" {}
         _FlipbookTint("Tint", Color) = (1,1,1,1)
@@ -39,6 +40,24 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         _DistanceFadeMaxAlpha("Max Alpha", Range(0, 1)) = 0
         _DistanceFadeMin("Min Distance", Float) = 0
         _DistanceFadeMax("Max Distance", Float) = 10
+        
+        [Toggle] _RandomizeAnimWorldPosition("Randomize Animation by World Position", Float) = 0
+        
+        [Toggle] _FloatOn("Float Enabled", Float) = 0
+        _FloatAmplitude("Float Amplitude", Float) = 0.15
+        _FloatAxis("Float Axis", Vector) = (0, 1, 0, 0)
+        _FloatFrequency("Float Frequency", Float) = 3
+        _FloatPhase("Float Phase", Float) = 0
+        
+        // [Toggle(SPIN_ON)] _SpinOn("Spin Enabled", Float) = 0
+        // _SpinAxis("Spin Axis", Vector) = (0, 1, 0, 0)
+        // _SpinPhase("Spin Phase", Float) = 0
+        // _SpinSpeed("Spin Speed", Float) = 1
+        
+        [Toggle] _ThrobOn("Throb Enabled", Float) = 0
+        _ThrobAmplitude("Throb Amplitude", Float) = 0.15
+        _ThrobFrequency("Throb Frequency", Float) = 5
+        _ThrobPhase("Throb Phase", Float) = 0
         
         [Toggle(USE_ALPHA_TEST)] _UseAlphaTest("Enable Alpha Test", Float) = 0
         _AlphaCutoff("Alpha Cutoff", Float) = 0.5
@@ -105,6 +124,8 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             #pragma shader_feature_local USE_OUTLINE
             #pragma shader_feature_local USE_DISTANCE_FADE
             #pragma shader_feature_local USE_PIXEL_SHARPEN
+            #pragma shader_feature_local FLIP_FACING_HORIZONTAL
+            #pragma shader_feature_local USE_VERTEX_ANIMATION
 
             #include "UnityCG.cginc"
             #include "Billboard Common.cginc"
@@ -191,7 +212,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #ifdef USE_DISTANCE_FADE
                     float distanceFade :TEXCOORD2;
                 #endif
-                OSP_FOG_COORDS(3)
+                OSP_FOG_COORDS(4)
                 float4 pos : SV_POSITION;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -230,6 +251,28 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
 
             // Alpha Test
             float _AlphaCutoff;
+
+            // Vertex Animation
+            half _RandomizeAnimWorldPosition;
+
+            // Float
+            half _FloatOn;
+            half _FloatAmplitude;
+            half3 _FloatAxis;
+            half _FloatFrequency;
+            half _FloatPhase;
+
+            // Spin
+            // TODO: Should it spin in 3D? Or spin in screen space?
+            // half3 _SpinAxis;
+            // half _SpinPhase;
+            // half _SpinSpeed;
+
+            // Throb
+            half _ThrobOn;
+            half _ThrobAmplitude;
+            half _ThrobFrequency;
+            half _ThrobPhase;
 
             // Transformation...............................................................
 
@@ -298,8 +341,11 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
 
                 float3 positionOs = v.vertex.xyz;
 
-                #if KEEP_CONSTANT_SCALING || USE_DISTANCE_FADE
-                    float distanceWs = length(unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition());
+                #if KEEP_CONSTANT_SCALING || USE_DISTANCE_FADE || FLIP_FACING_HORIZONTAL
+                    float3 viewDirectionWs = unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition();
+                    #if KEEP_CONSTANT_SCALING || USE_DISTANCE_FADE
+                        float distanceWs = length(viewDirectionWs);
+                    #endif
                 #endif
                 
                 #if KEEP_CONSTANT_SCALING
@@ -312,7 +358,36 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                     positionOs *= length(mul(unity_ObjectToWorld, float4(0, 0, 1, 0)).xyz);
                 #endif
 
-                positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
+                float2 scale = _Scale;
+
+                #ifdef FLIP_FACING_HORIZONTAL
+                if (dot(unity_WorldToObject._m20_m21_m22, viewDirectionWs) < 0)
+                {
+                    scale.x *= -1;
+                }
+                #endif
+
+                positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, scale);
+
+                #ifdef USE_VERTEX_ANIMATION
+                half randomizePhase = 0;
+                
+                if (_RandomizeAnimWorldPosition)
+                {
+                    float3 objectCenterWs = unity_ObjectToWorld._m03_m13_m23;
+                    randomizePhase = UNITY_TWO_PI * frac(127 * (objectCenterWs.x + objectCenterWs.y + objectCenterWs.z));
+                }
+                
+                if (_ThrobOn)
+                {
+                    positionOs.xyz += _ThrobAmplitude * sin(_ThrobFrequency * _Time.y + _ThrobPhase + randomizePhase) * positionOs.xyz;
+                }
+                
+                if (_FloatOn)
+                {
+                    positionOs.xyz += _FloatAmplitude * sin(_FloatFrequency * _Time.y + _FloatPhase + randomizePhase) * _FloatAxis;
+                }
+                #endif
 
                 o.pos = BillboardCs(float4(positionOs, 1));
                 o.uv0 = TRANSFORM_TEX(v.uv, _MainTex);

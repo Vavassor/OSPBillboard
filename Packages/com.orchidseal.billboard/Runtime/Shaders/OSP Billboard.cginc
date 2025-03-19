@@ -12,11 +12,10 @@
 float3 GetCenterCameraPosition()
 {
     #if defined(USING_STEREO_MATRICES)
-    float3 worldPosition = (unity_StereoWorldSpaceCameraPos[0] + unity_StereoWorldSpaceCameraPos[1]) / 2.0;
+    return (unity_StereoWorldSpaceCameraPos[0] + unity_StereoWorldSpaceCameraPos[1]) / 2.0;
     #else
-    float3 worldPosition = _WorldSpaceCameraPos.xyz;
+    return _WorldSpaceCameraPos.xyz;
     #endif
-    return worldPosition;
 }
 
 float3x3 LookAtVerticalMatrix(float3 forward, float3 up)

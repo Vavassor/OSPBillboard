@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.0
+
+- Adds float and throb vertex animations to unlit billboards.
+- Adds a flip facing horizontal setting to unlit billboards.
+
 ## v0.4.0
 
 - Adds enable toggles to collapsible section headers in editor UI.

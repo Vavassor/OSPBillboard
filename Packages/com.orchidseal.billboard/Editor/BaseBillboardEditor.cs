@@ -35,6 +35,7 @@ namespace OrchidSeal.Billboard.Editor
                     textColor = new Color(0.75f, 0.75f, 0.75f),
                 },
             };
+            public const int sectionMargin = 8;
             public static GUIStyle sectionVerticalLayout = new()
             {
                 margin = new RectOffset(0, 0, 0, 12),
@@ -54,6 +55,7 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent useNonUniformScaleLabel = new ("Use Non Uniform Object Scale");
             public static readonly GUIContent keepConstantScalingLabel = new ("Constant with Screen Size");
             public static readonly GUIContent constantScaleLabel = new ("Constant Scale");
+            public static readonly GUIContent flipFacingHorizontalLabel = new("Flip Facing Horizontal", "Flip the billboard when its local X axis faces left or right.");
             
             // Stencil
             public const string stencilFoldoutLabel = "Stencil";
@@ -125,8 +127,17 @@ namespace OrchidSeal.Billboard.Editor
                 ShaderGuiUtility.Vector2Property(FindProperty("_Position", properties), Styles.positionLabel);
                 materialEditor.ShaderProperty(FindProperty("_RotationRoll", properties), Styles.rotationRollLabel);
                 ShaderGuiUtility.Vector2Property(FindProperty("_Scale", properties), Styles.scaleLabel);
+                
+                GUILayout.Space(Styles.sectionMargin);
+                var flipFacingHorizontal = FindProperty("_FlipFacingHorizontal", properties, false);
+                if (flipFacingHorizontal != null)
+                {
+                    materialEditor.ShaderProperty(flipFacingHorizontal, Styles.flipFacingHorizontalLabel);
+                }
+                
                 ShaderGuiUtility.OptionalProperty(materialEditor, properties, "_UseNonUniformScale", Styles.useNonUniformScaleLabel);
                 
+                GUILayout.Space(Styles.sectionMargin);
                 var keepConstantScalingProp = FindProperty("_KeepConstantScaling", properties, false);
                 if (keepConstantScalingProp != null)
                 {

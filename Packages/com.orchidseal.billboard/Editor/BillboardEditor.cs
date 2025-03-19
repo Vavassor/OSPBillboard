@@ -21,6 +21,7 @@ namespace OrchidSeal.Billboard.Editor
             {
                 margin = new RectOffset(0, 0, 0, 12),
             };
+            public const int sectionMargin = 8;
             
             // Render option labels
             public const string renderFoldoutLabel = "Rendering";
@@ -63,6 +64,19 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent distanceFadeMaxAlphaLabel = new ("Max Alpha");
             public static readonly GUIContent distanceFadeMinLabel = new ("Min");
             public static readonly GUIContent distanceFadeMaxLabel = new ("Max");
+            
+            // Vertex Animation
+            public const string vertexAnimationFoldoutLabel = "Vertex Animation";
+            public static readonly GUIContent randomizeAnimationWorldPositionFieldLabel = new ("Randomize By World Position");
+            public static readonly GUIContent floatEnabledFieldLabel = new ("Float");
+            public static readonly GUIContent floatAmplitudeFieldLabel = new ("Amplitude");
+            public static readonly GUIContent floatAxisFieldLabel = new ("Axis");
+            public static readonly GUIContent floatFrequencyFieldLabel = new ("Frequency");
+            public static readonly GUIContent floatPhaseFieldLabel = new ("Phase");
+            public static readonly GUIContent throbEnabledFieldLabel = new ("Throb");
+            public static readonly GUIContent throbAmplitudeFieldLabel = new ("Amplitude");
+            public static readonly GUIContent throbFrequencyFieldLabel = new ("Frequency");
+            public static readonly GUIContent throbPhaseFieldLabel = new ("Phase");
         }
 
         private bool showRenderOptions = true;
@@ -70,6 +84,7 @@ namespace OrchidSeal.Billboard.Editor
         private bool showFlipbookOptions = true;
         private bool showOutlineOptions;
         private bool showDistanceFadeOptions;
+        private bool showVertexAnimationOptions;
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -85,6 +100,7 @@ namespace OrchidSeal.Billboard.Editor
             FlipbookOptions(materialEditor, properties, targetMaterial);
             OutlineOptions(materialEditor, properties, targetMaterial);
             DistanceFadeOptions(materialEditor, properties, targetMaterial);
+            VertexAnimationOptions(materialEditor, properties, targetMaterial);
             StencilOptions(materialEditor, properties);
 
             materialEditor.EnableInstancingField();
@@ -111,16 +127,16 @@ namespace OrchidSeal.Billboard.Editor
                 switch (blendMode)
                 {
                     case RenderMode.Custom:
-                        EditorGUILayout.Space(8);
+                        EditorGUILayout.Space(Styles.sectionMargin);
                         materialEditor.ShaderProperty(FindProperty("_BlendSrc", properties), Styles.sourceBlendLabel);
                         materialEditor.ShaderProperty(FindProperty("_BlendDst", properties), Styles.destinationBlendLabel);
                         materialEditor.ShaderProperty(FindProperty("_BlendOp", properties), Styles.blendOperationLabel);
                         
-                        EditorGUILayout.Space(8);
+                        EditorGUILayout.Space(Styles.sectionMargin);
                         materialEditor.ShaderProperty(FindProperty("_ZTest", properties), Styles.zTestLabel);
                         materialEditor.ShaderProperty(FindProperty("_ZWrite", properties), Styles.zWriteLabel);
                         
-                        EditorGUILayout.Space(8);
+                        EditorGUILayout.Space(Styles.sectionMargin);
                         materialEditor.ShaderProperty(useAlphaTestProperty, Styles.useAlphaTestLabel);
                         EditorGUI.BeginDisabledGroup(useAlphaTestProperty.floatValue == 0.0f);
                         materialEditor.ShaderProperty(FindProperty("_AlphaCutoff", properties), Styles.alphaCutoffLabel);
@@ -128,13 +144,13 @@ namespace OrchidSeal.Billboard.Editor
                         EditorGUI.EndDisabledGroup();
                         break;
                     case RenderMode.Cutout:
-                        EditorGUILayout.Space(8);
+                        EditorGUILayout.Space(Styles.sectionMargin);
                         materialEditor.ShaderProperty(FindProperty("_AlphaCutoff", properties), Styles.alphaCutoffLabel);
                         materialEditor.ShaderProperty(FindProperty("_AlphaToMask", properties), Styles.alphaToMaskLabel);
                         break;
                 }
 
-                EditorGUILayout.Space(8);
+                EditorGUILayout.Space(Styles.sectionMargin);
                 materialEditor.RenderQueueField();
                 materialEditor.ShaderProperty(FindProperty("_UseGammaSpace", properties), Styles.useGammaSpaceLabel);
                 materialEditor.ShaderProperty(FindProperty("_UsePixelSharpen", properties), Styles.usePixelSharpenLabel);
@@ -315,6 +331,42 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMaxAlpha", properties), Styles.distanceFadeMaxAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), Styles.distanceFadeMinLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMax", properties), Styles.distanceFadeMaxLabel);
+                EditorGUI.EndDisabledGroup();
+                
+                EditorGUILayout.EndVertical();
+            }
+        }
+        
+        // Vertex Animation........................................................................
+
+        private void VertexAnimationOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
+        {
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.vertexAnimationFoldoutLabel, ref showVertexAnimationOptions,
+                    material, "USE_VERTEX_ANIMATION"))
+            {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_VERTEX_ANIMATION"));
+                
+                materialEditor.ShaderProperty(FindProperty("_RandomizeAnimWorldPosition", properties), Styles.randomizeAnimationWorldPositionFieldLabel);
+                
+                GUILayout.Space(Styles.sectionMargin);
+                materialEditor.ShaderProperty(FindProperty("_FloatOn", properties), Styles.floatEnabledFieldLabel);
+                EditorGUI.BeginDisabledGroup(material.GetFloat("_FloatOn") == 0);
+                materialEditor.ShaderProperty(FindProperty("_FloatAmplitude", properties), Styles.floatAmplitudeFieldLabel);
+                ShaderGuiUtility.Vector3Property(FindProperty("_FloatAxis", properties), Styles.floatAxisFieldLabel);
+                materialEditor.ShaderProperty(FindProperty("_FloatFrequency", properties), Styles.floatFrequencyFieldLabel);
+                materialEditor.ShaderProperty(FindProperty("_FloatPhase", properties), Styles.floatPhaseFieldLabel);
+                EditorGUI.EndDisabledGroup();
+                
+                GUILayout.Space(Styles.sectionMargin);
+                materialEditor.ShaderProperty(FindProperty("_ThrobOn", properties), Styles.throbEnabledFieldLabel);
+                EditorGUI.BeginDisabledGroup(material.GetFloat("_ThrobOn") == 0);
+                materialEditor.ShaderProperty(FindProperty("_ThrobAmplitude", properties), Styles.throbAmplitudeFieldLabel);
+                materialEditor.ShaderProperty(FindProperty("_ThrobFrequency", properties), Styles.throbFrequencyFieldLabel);
+                materialEditor.ShaderProperty(FindProperty("_ThrobPhase", properties), Styles.throbPhaseFieldLabel);
+                EditorGUI.EndDisabledGroup();
+                
                 EditorGUI.EndDisabledGroup();
                 
                 EditorGUILayout.EndVertical();
