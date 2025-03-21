@@ -14,6 +14,7 @@ Material:
   m_ValidKeywords:
   - DISTANCE_FADE_ON
   - KEEP_CONSTANT_SCALING
+  - UNDERLAY_ON
   - _BILLBOARD_MODE_SPHERICAL
   m_InvalidKeywords:
   - _BILLBOARDMODE_VERTICAL
@@ -76,7 +77,7 @@ Material:
     - _FaceUVSpeedX: 0
     - _FaceUVSpeedY: 0
     - _GlowInner: 0.05
-    - _GlowOffset: 0
+    - _GlowOffset: 0.42
     - _GlowOuter: 0.05
     - _GlowPower: 0.75
     - _GradientScale: 10
@@ -92,7 +93,7 @@ Material:
     - _Reflectivity: 10
     - _ScaleRatioA: 0.9
     - _ScaleRatioB: 0.73125
-    - _ScaleRatioC: 0.73125
+    - _ScaleRatioC: 0.71271926
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
@@ -109,9 +110,9 @@ Material:
     - _TextureHeight: 1024
     - _TextureWidth: 1024
     - _UnderlayDilate: 0
-    - _UnderlayOffsetX: 0
-    - _UnderlayOffsetY: 0
-    - _UnderlaySoftness: 0
+    - _UnderlayOffsetX: 0.51
+    - _UnderlayOffsetY: -0.77
+    - _UnderlaySoftness: 0.256
     - _VertexOffsetX: 0
     - _VertexOffsetY: 0
     - _WeightBold: 0.75
@@ -128,5 +129,5 @@ Material:
     - _ReflectOutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _SilhouetteFadeParams: {r: -0.1, g: 1, b: 0.05, a: 0}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
-    - _UnderlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+    - _UnderlayColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

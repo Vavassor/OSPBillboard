@@ -27,7 +27,7 @@ namespace OrchidSeal.Billboard.BillboardExample
                 var overlappedObject = overlapCapsuleColliders[i].gameObject;
                 if (overlappedObject && overlappedObject.name.Contains("Collectible"))
                 {
-                    collectibleManager.Collect(overlappedObject);
+                    collectibleManager._Collect(overlappedObject);
                 }
             }
         }

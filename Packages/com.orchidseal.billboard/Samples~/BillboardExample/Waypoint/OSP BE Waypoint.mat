@@ -23,7 +23,7 @@ Material:
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
   stringTagMap:
-    RenderType: Transparent
+    RenderType: Opaque
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
@@ -88,10 +88,15 @@ Material:
     - _DistanceFadeMin: 2
     - _DistanceFadeMinAlpha: 0
     - _DstBlend: 0
+    - _FlipFacingHorizontal: 0
     - _FlipbookBlendMode: 0
     - _FlipbookFramesPerSecond: 30
     - _FlipbookManualFrame: 0
     - _FlipbookUseManualFrame: 0
+    - _FloatAmplitude: 0.15
+    - _FloatFrequency: 3
+    - _FloatOn: 0
+    - _FloatPhase: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -99,8 +104,10 @@ Material:
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
+    - _OutlineWidth: 1
     - _Parallax: 0.02
-    - _RenderMode: 2
+    - _RandomizeAnimWorldPosition: 0
+    - _RenderMode: 5
     - _RotationRoll: 0
     - _ScaleWithScreen: 0
     - _SmoothnessTextureChannel: 0
@@ -114,6 +121,10 @@ Material:
     - _StencilRef: 0
     - _StencilWriteMask: 255
     - _StencilZFail: 0
+    - _ThrobAmplitude: 0.15
+    - _ThrobFrequency: 5
+    - _ThrobOn: 0
+    - _ThrobPhase: 0
     - _UVSec: 0
     - _UseAlphaTest: 0
     - _UseDistanceFade: 0
@@ -122,13 +133,15 @@ Material:
     - _UseGammaSpace: 0
     - _UseNonUniformScale: 1
     - _UsePixelSharpen: 0
-    - _ZTest: 4
+    - _ZTest: 8
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FlipbookScrollVelocity: {r: 0, g: 0, b: 0, a: 0}
     - _FlipbookTint: {r: 1, g: 1, b: 1, a: 1}
+    - _FloatAxis: {r: 0, g: 1, b: 0, a: 0}
+    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _Position: {r: 0, g: 0, b: 0, a: 0}
     - _Scale: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []
