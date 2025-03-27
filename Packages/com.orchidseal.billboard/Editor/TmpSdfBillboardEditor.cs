@@ -20,6 +20,9 @@ namespace OrchidSeal.Billboard.Editor
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMaterial = materialEditor.target as Material;
+            
+            EditorGUI.BeginChangeCheck();
+
             FaceOptions(materialEditor, properties);
             BillboardOptions(materialEditor, properties, targetMaterial);
             OutlineOptions(materialEditor, properties);
@@ -29,6 +32,13 @@ namespace OrchidSeal.Billboard.Editor
             DistanceFadeOptions(materialEditor, properties, targetMaterial);
             SilhouetteOptions(materialEditor, properties, targetMaterial);
             DebugOptions(materialEditor, properties, targetMaterial);
+            
+            // TextMeshPro modifies actual vertices depending on the outline thickness and other properties!
+            // So we have to notify the text mesh pro component about changes.
+            if (EditorGUI.EndChangeCheck())
+            {
+                TMPro.TMPro_EventManager.ON_MATERIAL_PROPERTY_CHANGED(true, targetMaterial);
+            }
         }
         
         private static bool MaterialKeywordFoldout(string title, ref bool isCollapsed, Material material, string[] keywords, string defaultKeyword)
@@ -169,12 +179,14 @@ namespace OrchidSeal.Billboard.Editor
 
         private void LightingOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.MaterialKeywordFoldout(lightingFoldoutLabel, ref showLightingOptions, material, "BEVEL_ON"))
+            var bevelOnKeyword = new LocalKeyword(material.shader, "BEVEL_ON");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(lightingFoldoutLabel, ref showLightingOptions, material, bevelOnKeyword))
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.Space(10, false);
                 EditorGUILayout.BeginVertical();
-                var isDisabled = !material.IsKeywordEnabled("BEVEL_ON");
+                var isDisabled = !material.IsKeywordEnabled(bevelOnKeyword);
                 BevelOptions(materialEditor, properties, isDisabled);
                 LocalLightingOptions(materialEditor, properties, isDisabled);
                 BumpMapOptions(materialEditor, properties, isDisabled);
@@ -286,11 +298,13 @@ namespace OrchidSeal.Billboard.Editor
 
         private void GlowOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.MaterialKeywordFoldout(glowFoldoutLabel, ref showGlowOptions, material, "GLOW_ON"))
+            var glowOnKeyword = new LocalKeyword(material.shader, "GLOW_ON");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(glowFoldoutLabel, ref showGlowOptions, material, glowOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("GLOW_ON"));
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(glowOnKeyword));
                 materialEditor.ShaderProperty(FindProperty("_GlowColor", properties), glowColorLabel);
                 materialEditor.ShaderProperty(FindProperty("_GlowOffset", properties), glowOffsetLabel);
                 materialEditor.ShaderProperty(FindProperty("_GlowInner", properties), glowInnerLabel);
@@ -338,11 +352,13 @@ namespace OrchidSeal.Billboard.Editor
 
         private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.MaterialKeywordFoldout(distanceFadeFoldoutLabel, ref showDistanceFadeOptions, material, "DISTANCE_FADE_ON"))
+            var distanceFadeOnKeyword = new LocalKeyword(material.shader, "DISTANCE_FADE_ON");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(distanceFadeFoldoutLabel, ref showDistanceFadeOptions, material, distanceFadeOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("DISTANCE_FADE_ON"));
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(distanceFadeOnKeyword));
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMinAlpha", properties), distanceFadeMinAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMaxAlpha", properties), distanceFadeMaxAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), distanceFadeMinLabel);
@@ -361,13 +377,14 @@ namespace OrchidSeal.Billboard.Editor
 
         private void SilhouetteOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            var wasOn = material.IsKeywordEnabled("SILHOUETTE_FADING_ON");
+            var silhouetteFadingOnKeyword = new LocalKeyword(material.shader, "SILHOUETTE_FADING_ON");
+            var wasOn = material.IsKeywordEnabled(silhouetteFadingOnKeyword);
             
-            if (ShaderGuiUtility.MaterialKeywordFoldout(silhouetteFoldoutLabel, ref showSilhouetteOptions, material, "SILHOUETTE_FADING_ON"))
+            if (ShaderGuiUtility.MaterialKeywordFoldout(silhouetteFoldoutLabel, ref showSilhouetteOptions, material, silhouetteFadingOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                var isOn = material.IsKeywordEnabled("SILHOUETTE_FADING_ON");
+                var isOn = material.IsKeywordEnabled(silhouetteFadingOnKeyword);
                 if (wasOn != isOn)
                 {
                     material.SetShaderPassEnabled("ForwardBase", isOn);

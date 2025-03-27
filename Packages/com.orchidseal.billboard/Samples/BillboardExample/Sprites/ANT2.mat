@@ -1,0 +1,148 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ANT2
+  m_Shader: {fileID: 4800000, guid: 3d40f65f368b6364e8349553a248f195, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - USE_ALPHA_TEST
+  - USE_FLIPBOOK
+  - USE_NON_UNIFORM_SCALE
+  - USE_PIXEL_SHARPEN
+  - _BILLBOARD_MODE_SPHERICAL
+  - _COLORMODE_MULTIPLY
+  m_InvalidKeywords:
+  - _ALPHATOMASK_ON
+  - _BILLBOARD_MODE_AUTO
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 2450
+  stringTagMap:
+    RenderType: TransparentCutout
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailAlbedoMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FlipbookTexArray:
+        m_Texture: {fileID: 18700000, guid: 6f158146ee1a60747bd63251d74d83ee, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MetallicGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ParallaxMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaCutoff: 0.5
+    - _AlphaToMask: 1
+    - _Billboard_Mode: 1
+    - _BlendDst: 0
+    - _BlendOp: 0
+    - _BlendSrc: 1
+    - _BumpScale: 1
+    - _ColorMode: 0
+    - _ConstantScale: 1
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _DistanceFadeMax: 10
+    - _DistanceFadeMaxAlpha: 0
+    - _DistanceFadeMin: 0
+    - _DistanceFadeMinAlpha: 1
+    - _DstBlend: 0
+    - _FlipFacingHorizontal: 0
+    - _FlipbookBlendMode: 0
+    - _FlipbookFramesPerSecond: 12
+    - _FlipbookManualFrame: 0
+    - _FlipbookUseManualFrame: 0
+    - _FloatAmplitude: 0.15
+    - _FloatFrequency: 3
+    - _FloatOn: 0
+    - _FloatPhase: 0
+    - _GlossMapScale: 1
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _KeepConstantScaling: 0
+    - _Metallic: 0
+    - _Mode: 0
+    - _OcclusionStrength: 1
+    - _OutlineWidth: 1
+    - _Parallax: 0.02
+    - _RandomizeAnimWorldPosition: 0
+    - _RenderMode: 1
+    - _RotationRoll: 0
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _StencilComp: 8
+    - _StencilFail: 0
+    - _StencilPass: 0
+    - _StencilReadMask: 255
+    - _StencilRef: 0
+    - _StencilWriteMask: 255
+    - _StencilZFail: 0
+    - _ThrobAmplitude: 0.15
+    - _ThrobFrequency: 5
+    - _ThrobOn: 0
+    - _ThrobPhase: 0
+    - _UVSec: 0
+    - _UseAlphaTest: 1
+    - _UseDistanceFade: 0
+    - _UseFlipbook: 1
+    - _UseFlipbookSmoothing: 0
+    - _UseGammaSpace: 0
+    - _UseNonUniformScale: 1
+    - _UsePixelSharpen: 1
+    - _UsePixelSmooth: 0
+    - _ZTest: 4
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FlipbookScrollVelocity: {r: 0, g: 0, b: 0, a: 0}
+    - _FlipbookTint: {r: 1, g: 1, b: 1, a: 1}
+    - _FloatAxis: {r: 0, g: 1, b: 0, a: 0}
+    - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _Position: {r: 0, g: 0, b: 0, a: 0}
+    - _Scale: {r: 1, g: 1, b: 0, a: 0}
+  m_BuildTextureStacks: []

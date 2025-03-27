@@ -51,6 +51,7 @@ namespace OrchidSeal.Billboard.Editor
         private static readonly int BumpMap = Shader.PropertyToID("_BumpMap");
         private static readonly int EmissionMap = Shader.PropertyToID("_EmissionMap");
 
+        private bool shouldApplyDefaults = true;
         private bool showBaseOptions = true;
         private bool showRenderOptions = true;
         private bool showEmissionOptions;
@@ -58,6 +59,12 @@ namespace OrchidSeal.Billboard.Editor
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMaterial = materialEditor.target as Material;
+            
+            if (shouldApplyDefaults)
+            {
+                SetBlendMode(targetMaterial);
+                shouldApplyDefaults = false;
+            }
             
             AboutLinks();
             RenderOptions(materialEditor, properties, targetMaterial);
@@ -215,18 +222,6 @@ namespace OrchidSeal.Billboard.Editor
             }
         }
 
-        private static void SetKeyword(Material material, string keyword, bool isOn)
-        {
-            if (isOn)
-            {
-                material.EnableKeyword(keyword);
-            }
-            else
-            {
-                material.DisableKeyword(keyword);
-            }
-        }
-
         private void BaseOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material targetMaterial)
         {
             if (ShaderGuiUtility.FoldoutHeader(Styles.baseFoldoutLabel, ref showBaseOptions))
@@ -242,7 +237,7 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.TexturePropertySingleLine(Styles.normalMapLabel, FindProperty("_BumpMap", properties), FindProperty("_BumpScale", properties));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    SetKeyword(targetMaterial, "USE_NORMAL_MAP", targetMaterial.GetTexture(BumpMap));
+                    ShaderGuiUtility.SetKeyword(targetMaterial, "USE_NORMAL_MAP", targetMaterial.GetTexture(BumpMap));
                 }
                 
                 materialEditor.TextureScaleOffsetProperty(baseTextureProperty);
@@ -261,7 +256,7 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.TexturePropertySingleLine(Styles.emissionMapLabel, FindProperty("_EmissionMap", properties), FindProperty("_EmissionColor", properties));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    SetKeyword(targetMaterial, "USE_EMISSION_MAP", targetMaterial.GetTexture(EmissionMap));
+                    ShaderGuiUtility.SetKeyword(targetMaterial, "USE_EMISSION_MAP", targetMaterial.GetTexture(EmissionMap));
                 }
                 
                 EditorGUILayout.EndVertical();

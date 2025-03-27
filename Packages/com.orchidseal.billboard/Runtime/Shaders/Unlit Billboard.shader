@@ -349,7 +349,10 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #endif
                 
                 #if KEEP_CONSTANT_SCALING
-                    positionOs *= _ConstantScale * distanceWs;
+                    positionOs *= _ConstantScale / unity_CameraProjection._m11 * distanceWs;
+                    #if defined(USING_STEREO_MATRICES)
+                        positionOs *= 0.25; // Arbitrary scale factor. Just felt too large in VR? -Vavassor
+                    #endif
                 #endif
                 
                 #ifdef USE_NON_UNIFORM_SCALE
@@ -365,6 +368,17 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 {
                     scale.x *= -1;
                 }
+                #endif
+
+                #if USE_OUTLINE
+                    #if defined(USE_FLIPBOOK)
+                        float2 outlineTexelSize = min(_MainTex_TexelSize.xy, _FlipbookTexArray_TexelSize.xy);
+                    #else
+                        float2 outlineTexelSize = _MainTex_TexelSize.xy;
+                    #endif
+                    float2 paddingTexels = _OutlineWidth * outlineTexelSize;
+                    scale += 2.0 * paddingTexels;
+                    v.uv = (v.uv + sign(v.uv - float2(0.5, 0.5)) * paddingTexels);
                 #endif
 
                 positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, scale);
@@ -441,7 +455,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
                 #endif
 
                 #ifdef USE_OUTLINE
-                col += _OutlineColor * GetOutline(i.uv0, i.uv1, _OutlineWidth, col.a);
+                col = lerp(col, _OutlineColor, GetOutline(i.uv0, i.uv1, _OutlineWidth, col.a));
                 #endif
 
                 #ifdef USE_DISTANCE_FADE

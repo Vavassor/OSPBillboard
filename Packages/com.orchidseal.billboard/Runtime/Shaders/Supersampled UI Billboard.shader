@@ -7,18 +7,24 @@ Shader "Orchid Seal/OSP Billboard/Supersampled UI Billboard"
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
-
+        
+        [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
+        
+        [KeywordEnum(None, Spherical, Cylindrical_World, Cylindrical_Local)] _Billboard_Mode("Billboard Mode", Float) = 1
+        
+        [Enum(UnityEngine.Rendering.ColorWriteMask)] _ColorMask ("Color Mask", Float) = 15
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 0 //"Off"
+        
+        [Header(Depth)]
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest("ZTest", Float) = 4 //"LessEqual"
+        [Enum(Off,0,On,1)] _ZWrite("ZWrite", Float) = 0.0 //"Off"
+        
+        [Header(Stencil)]
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
         _StencilOp ("Stencil Operation", Float) = 0
         _StencilWriteMask ("Stencil Write Mask", Float) = 255
         _StencilReadMask ("Stencil Read Mask", Float) = 255
-
-        _ColorMask ("Color Mask", Float) = 15
-
-        [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip ("Use Alpha Clip", Float) = 0
-        
-        [KeywordEnum(None, Spherical, Cylindrical_World, Cylindrical_Local)] _Billboard_Mode("Billboard Mode", Float) = 1
     }
 
     SubShader
@@ -41,10 +47,10 @@ Shader "Orchid Seal/OSP Billboard/Supersampled UI Billboard"
             WriteMask [_StencilWriteMask]
         }
 
-        Cull Off
+        Cull [_Cull]
         Lighting Off
-        ZWrite Off
-        ZTest [unity_GUIZTestMode]
+        ZWrite [_ZWrite]
+        ZTest [_ZTest]
         Blend SrcAlpha OneMinusSrcAlpha
         ColorMask [_ColorMask]
 
@@ -99,7 +105,10 @@ Shader "Orchid Seal/OSP Billboard/Supersampled UI Billboard"
         	    // scaleOs *= (_KeepConstantScaling) ? _ConstantScale * length(unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition()); : 1;
 
                 float4 positionOs = v.vertex;
+
+                #if (_BILLBOARD_MODE_CYLINDRICAL_LOCAL || _BILLBOARD_MODE_CYLINDRICAL_WORLD || _BILLBOARD_MODE_SPHERICAL)
                 positionOs.xyz *= scaleOs;
+                #endif
                 float4 vPosition = BillboardCs(positionOs);
                 
                 OUT.vertex = vPosition;

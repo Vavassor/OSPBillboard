@@ -52,8 +52,6 @@ float2 SharpenPixelUv(float2 uv, float4 texelSize)
 
 // Transformation..............................................................
 
-#define DEGREES_TO_RADIANS 0.0174532925
-
 float2 Rotate2D(float2 v, float angle)
 {
     float s, c;
@@ -63,7 +61,7 @@ float2 Rotate2D(float2 v, float angle)
 
 float2 Transform2d(float2 position, float2 translation, float rotationDegrees, float2 scale)
 {
-    return scale * Rotate2D(position.xy, DEGREES_TO_RADIANS * rotationDegrees) + translation;
+    return scale * Rotate2D(position.xy, radians(rotationDegrees)) + translation;
 }
 
 #endif // BILLBOARD_COMMON_CGINC_

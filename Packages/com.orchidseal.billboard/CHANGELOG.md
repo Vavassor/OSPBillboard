@@ -4,8 +4,15 @@
 
 - Adds float and throb vertex animations to unlit billboards.
 - Adds a flip facing horizontal setting to unlit billboards.
+- Fixes "constant with screen size" setting being FOV dependent.
+- Adds manpu, parkour, and a worm to the sample project.
+- Fixes an issue where depth and blend mode settings would be incorrect when switching a material from standard shader.
+- Fixes outlines being the wrong color when the image is white.
+- Fixes outlines getting cut off when width is high.
 
 ## v0.4.0
+
+Released Mar 17, 2025.
 
 - Adds enable toggles to collapsible section headers in editor UI.
 - Adds preset buttons to the flipbook creator.

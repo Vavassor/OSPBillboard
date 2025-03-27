@@ -370,18 +370,25 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
             float centerViewDistanceWs = length(unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition());
         #endif
 
+        #if (_BILLBOARD_MODE_CYLINDRICAL_LOCAL || _BILLBOARD_MODE_CYLINDRICAL_WORLD || _BILLBOARD_MODE_SPHERICAL)
             float scaleOs = length(float3(UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z));
+        #else
+            float scaleOs = 1.0;
+        #endif
             
         #if KEEP_CONSTANT_SCALING
-            scaleOs *= _ConstantScale * centerViewDistanceWs;
-            float pixelConstantScale = abs(mul((float2x2)UNITY_MATRIX_P, float2(centerViewDistanceWs, 0))).x;
+            float pixelConstantScale = centerViewDistanceWs / unity_CameraProjection._m11;
+            scaleOs *= _ConstantScale * pixelConstantScale;
+            #if defined(USING_STEREO_MATRICES)
+                scaleOs *= 0.25; // Arbitrary scale factor. Just felt too large in VR? -Vavassor
+            #endif
         #else
             float pixelConstantScale = 1.0;
         #endif
-
+            
             vert.xyz *= scaleOs;
             float4 vPosition = BillboardCs(vert);
-
+            
             float2 pixelSize = vPosition.w;
             pixelSize /= float2(_ScaleX, _ScaleY) * abs(mul((float2x2)UNITY_MATRIX_P, _ScreenParams.xy));
             float scale = rsqrt(dot(pixelSize, pixelSize));
@@ -391,6 +398,7 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
             float weight = lerp(_WeightNormal, _WeightBold, bold) / 4.0;
             weight = (weight + _FaceDilate) * _ScaleRatioA * 0.5;
 
+            scale /= 1 + (_OutlineSoftness * _ScaleRatioA * scale);
             float bias = (.5 - weight) + (.5 / scale);
             float alphaClip = (1.0 - _OutlineWidth * _ScaleRatioA - _OutlineSoftness * _ScaleRatioA);
 

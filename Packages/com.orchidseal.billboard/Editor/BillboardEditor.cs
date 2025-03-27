@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Rendering;
 
 namespace OrchidSeal.Billboard.Editor
 {
@@ -79,6 +80,7 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent throbPhaseFieldLabel = new ("Phase");
         }
 
+        private bool shouldApplyDefaults = true;
         private bool showRenderOptions = true;
         private bool showBaseOptions = true;
         private bool showFlipbookOptions = true;
@@ -92,6 +94,12 @@ namespace OrchidSeal.Billboard.Editor
             // base.OnGUI(materialEditor, properties);
 
             var targetMaterial = materialEditor.target as Material;
+            
+            if (shouldApplyDefaults)
+            {
+                SetBlendMode(targetMaterial);
+                shouldApplyDefaults = false;
+            }
 
             AboutLinks();
             RenderOptions(materialEditor, properties, targetMaterial);
@@ -267,7 +275,9 @@ namespace OrchidSeal.Billboard.Editor
         
         private void FlipbookOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.flipbookFoldoutLabel, ref showFlipbookOptions, material, "USE_FLIPBOOK"))
+            var flipbookOnKeyword = new LocalKeyword(material.shader, "USE_FLIPBOOK");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.flipbookFoldoutLabel, ref showFlipbookOptions, material, flipbookOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
@@ -281,7 +291,7 @@ namespace OrchidSeal.Billboard.Editor
                     FlipbookCreatorEditor.ShowWindow();
                 }
 
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_FLIPBOOK"));
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(flipbookOnKeyword));
                 materialEditor.TexturePropertySingleLine(Styles.flipbookLabel, flipbookProperty, FindProperty("_FlipbookTint", properties));
                 materialEditor.TextureScaleOffsetProperty(flipbookProperty);
                 ShaderGuiUtility.Vector2Property(FindProperty("_FlipbookScrollVelocity", properties), Styles.flipbookScrollVelocityLabel);
@@ -305,11 +315,13 @@ namespace OrchidSeal.Billboard.Editor
 
         private void OutlineOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.outlineFoldoutLabel, ref showOutlineOptions, material, "USE_OUTLINE"))
+            var outlineOnKeyword = new LocalKeyword(material.shader, "USE_OUTLINE");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.outlineFoldoutLabel, ref showOutlineOptions, material, outlineOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_OUTLINE"));
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(outlineOnKeyword));
                 materialEditor.ShaderProperty(FindProperty("_OutlineColor", properties), Styles.outlineColorLabel);
                 materialEditor.ShaderProperty(FindProperty("_OutlineWidth", properties), Styles.outlineWidthLabel);
                 EditorGUI.EndDisabledGroup();
@@ -322,11 +334,13 @@ namespace OrchidSeal.Billboard.Editor
 
         private void DistanceFadeOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
-            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.distanceFadeFoldoutLabel, ref showDistanceFadeOptions, material, "USE_DISTANCE_FADE"))
+            var distanceFadeOnKeyword = new LocalKeyword(material.shader, "USE_DISTANCE_FADE");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.distanceFadeFoldoutLabel, ref showDistanceFadeOptions, material, distanceFadeOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_DISTANCE_FADE"));
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(distanceFadeOnKeyword));
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMinAlpha", properties), Styles.distanceFadeMinAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMaxAlpha", properties), Styles.distanceFadeMaxAlphaLabel);
                 materialEditor.ShaderProperty(FindProperty("_DistanceFadeMin", properties), Styles.distanceFadeMinLabel);
@@ -341,12 +355,14 @@ namespace OrchidSeal.Billboard.Editor
 
         private void VertexAnimationOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
         {
+            var vertexAnimationOnKeyword = new LocalKeyword(material.shader, "USE_VERTEX_ANIMATION");
+            
             if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.vertexAnimationFoldoutLabel, ref showVertexAnimationOptions,
-                    material, "USE_VERTEX_ANIMATION"))
+                    material, vertexAnimationOnKeyword))
             {
                 EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
                 
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled("USE_VERTEX_ANIMATION"));
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(vertexAnimationOnKeyword));
                 
                 materialEditor.ShaderProperty(FindProperty("_RandomizeAnimWorldPosition", properties), Styles.randomizeAnimationWorldPositionFieldLabel);
                 

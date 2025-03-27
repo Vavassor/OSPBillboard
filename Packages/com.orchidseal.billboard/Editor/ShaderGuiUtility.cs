@@ -162,16 +162,15 @@ namespace OrchidSeal.Billboard.Editor
             return isShown;
         }
         
-        public static bool MaterialKeywordFoldout(string title, ref bool isCollapsed, Material material, string keyword, bool isReversed = false)
+        public static bool MaterialKeywordFoldout(string title, ref bool isCollapsed, Material material, LocalKeyword keyword, bool isReversed = false)
         {
             var isToggleOn = material.IsKeywordEnabled(keyword);
             if (isReversed) isToggleOn = !isToggleOn;
             EditorGUI.BeginChangeCheck();
             FoldoutHeader(title, ref isCollapsed, ref isToggleOn);
             if (!EditorGUI.EndChangeCheck()) return isCollapsed;
-            var localKeyword = new LocalKeyword(material.shader, keyword);
-            if (!localKeyword.isValid) return isToggleOn;
-            material.SetKeyword(localKeyword, isToggleOn);
+            if (!keyword.isValid) return isToggleOn;
+            material.SetKeyword(keyword, isToggleOn);
             EditorUtility.SetDirty(material);
             return isCollapsed;
         }
@@ -183,6 +182,18 @@ namespace OrchidSeal.Billboard.Editor
                 if (prop == null || prop.name != name) continue;
                 materialEditor.ShaderProperty(prop, label);
                 return;
+            }
+        }
+        
+        public static void SetKeyword(Material material, string keyword, bool isOn)
+        {
+            if (isOn)
+            {
+                material.EnableKeyword(keyword);
+            }
+            else
+            {
+                material.DisableKeyword(keyword);
             }
         }
         
