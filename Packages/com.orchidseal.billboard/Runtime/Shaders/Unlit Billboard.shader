@@ -133,7 +133,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
 
             // Blending.....................................................................
 
-            #define BLEND_MODE_LERP 0
+            #define BLEND_MODE_REPLACE 0
             #define BLEND_MODE_TRANSPARENT 1
             #define BLEND_MODE_ADD 2
             #define BLEND_MODE_MULTIPLY 3
@@ -142,7 +142,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             {
                 switch (blendMode)
                 {
-                case BLEND_MODE_LERP: return s;
+                case BLEND_MODE_REPLACE: return s;
                 case BLEND_MODE_TRANSPARENT:
                 {
                     float resultAlpha = s.a + d.a * (1.0 - s.a);
@@ -159,25 +159,10 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             {
                 switch (blendMode)
                 {
-                case BLEND_MODE_LERP: return s;
+                case BLEND_MODE_REPLACE: return s;
                 case BLEND_MODE_TRANSPARENT: return s + d * (1.0 - s);
                 case BLEND_MODE_ADD: return s + d;
                 case BLEND_MODE_MULTIPLY: return s * d;
-                default: return 0;
-                }
-            }
-
-            #define BLEND_BY_STRENGTH 0
-            #define BLEND_BY_VERTEX_COLOR_RED 1
-            #define BLEND_BY_VERTEX_COLOR_ALPHA 2
-
-            float GetBlendAmount(float strength, float4 vertexColor, float blendBy)
-            {
-                switch (blendBy)
-                {
-                case BLEND_BY_STRENGTH: return strength;
-                case BLEND_BY_VERTEX_COLOR_RED: return vertexColor.r;
-                case BLEND_BY_VERTEX_COLOR_ALPHA: return vertexColor.a;
                 default: return 0;
                 }
             }

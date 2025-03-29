@@ -2,6 +2,8 @@
 
 ## v0.5.0
 
+Released March 29, 2025.
+
 - Adds float and throb vertex animations to unlit billboards.
 - Adds a flip facing horizontal setting to unlit billboards.
 - Fixes "constant with screen size" setting being FOV dependent.
@@ -12,7 +14,7 @@
 
 ## v0.4.0
 
-Released Mar 17, 2025.
+Released March 17, 2025.
 
 - Adds enable toggles to collapsible section headers in editor UI.
 - Adds preset buttons to the flipbook creator.
