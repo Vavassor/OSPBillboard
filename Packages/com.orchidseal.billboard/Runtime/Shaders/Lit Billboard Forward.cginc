@@ -38,44 +38,7 @@
 #define OSP_TRANSFER_SHADOW(a, positionCs, positionWs)
 #endif
 
-// Forward Base Pass...............................................................................
-
-struct VertexInput
-{
-    float4 vertex : POSITION;
-    float3 normal : NORMAL;
-    fixed4 color : COLOR;
-    float2 uv0 : TEXCOORD0;
-    #if defined(USE_NORMAL_MAP)
-    float4 tangent : TANGENT;
-    #endif
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct VertexOutputBase
-{
-    float4 positionCs : SV_POSITION;
-    float2 uv0 : TEXCOORD0;
-    float3 positionWs : TEXCOORD1;
-    float3 viewDirectionWs : TEXCOORD2;
-    float4 tangentToWorldAndPackedData[3] : TEXCOORD3; // [3x3:tangentToWorld]
-    half4 ambientColor : TEXCOORD6;
-    OSP_SHADOW_COORDS(7)
-    DECLARE_LIGHT_COORDS(8)
-    OSP_FOG_COORDS(9)
-    UNITY_VERTEX_OUTPUT_STEREO
-};
-
-struct VertexOutputAdd
-{
-    float4 positionCs : SV_POSITION;
-    float2 uv0 : TEXCOORD0;
-    float3 positionWs : TEXCOORD1;
-    float3 viewDirectionWs : TEXCOORD2;
-    float4 tangentToWorldAndLightDir[3] : TEXCOORD3; // [3x3:tangentToWorld | 1x3:lightDir]
-    OSP_SHADOW_COORDS(6)
-    UNITY_VERTEX_OUTPUT_STEREO
-};
+// Inputs..........................................................................................
 
 UNITY_DECLARE_TEX2D(_MainTex);
 float4 _MainTex_ST;
@@ -100,127 +63,109 @@ float2 _Position;
 float _RotationRoll;
 float2 _Scale;
 
-VertexOutputBase VertexForwardBase(VertexInput v)
+// Flipbook
+UNITY_DECLARE_TEX2DARRAY(_FlipbookTexArray);
+float4 _FlipbookTexArray_ST;
+float4 _FlipbookTexArray_TexelSize;
+float4 _FlipbookTint;
+float2 _FlipbookScrollVelocity;
+float _FlipbookBlendMode;
+float _FlipbookFramesPerSecond;
+float _FlipbookUseManualFrame;
+float _FlipbookManualFrame;
+
+// Per renderer data ..................................................................
+
+#ifdef SPRITE_RENDERER_ON
+#ifdef UNITY_INSTANCING_ENABLED
+UNITY_INSTANCING_BUFFER_START(PerDrawSprite)
+    UNITY_DEFINE_INSTANCED_PROP(fixed4, unity_SpriteRendererColorArray)
+    UNITY_DEFINE_INSTANCED_PROP(fixed2, unity_SpriteFlipArray)
+UNITY_INSTANCING_BUFFER_END(PerDrawSprite)
+
+#define _RendererColor UNITY_ACCESS_INSTANCED_PROP(PerDrawSprite, unity_SpriteRendererColorArray)
+#define _Flip UNITY_ACCESS_INSTANCED_PROP(PerDrawSprite, unity_SpriteFlipArray)
+#endif // instancing
+
+CBUFFER_START(UnityPerDrawSprite)
+#ifndef UNITY_INSTANCING_ENABLED
+fixed4 _RendererColor;
+fixed2 _Flip;
+#endif
+CBUFFER_END
+#endif // sprite renderer
+
+// Flipbook........................................................................................
+
+float4 TransferFlipbook(float2 inputTexcoord)
 {
-    VertexOutputBase o;
-
-    UNITY_SETUP_INSTANCE_ID(v);
-    UNITY_INITIALIZE_OUTPUT(VertexOutputBase, o);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-
-    float4 positionOs = v.vertex;
-    positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
-
-    float3 normalWs;
-    float3 positionWs;
-    #ifdef USE_NORMAL_MAP
-    float3 tangentWs;
-    BillboardWithNormalTangentWs(positionOs, v.normal, v.tangent, positionWs, normalWs, tangentWs);
-    #else
-    BillboardWithNormalWs(positionOs, v.normal, positionWs, normalWs);
-    #endif // USE_NORMAL_MAP
-
-    o.positionCs = UnityWorldToClipPos(float4(positionWs, 1));
-    o.uv0 = TRANSFORM_TEX(v.uv0, _MainTex);
-    o.positionWs = positionWs;
-    o.viewDirectionWs.xyz = positionWs.xyz - _WorldSpaceCameraPos;
-
-    #ifdef USE_NORMAL_MAP
-    float3x3 tangentToWorld = CreateTangentToWorldPerVertex(normalWs.xyz, tangentWs, v.tangent.w);
-    o.tangentToWorldAndPackedData[0].xyz = tangentToWorld[0];
-    o.tangentToWorldAndPackedData[1].xyz = tangentToWorld[1];
-    o.tangentToWorldAndPackedData[2].xyz = tangentToWorld[2];
-    #else
-    o.tangentToWorldAndPackedData[0].xyz = 0;
-    o.tangentToWorldAndPackedData[1].xyz = 0;
-    o.tangentToWorldAndPackedData[2].xyz = normalWs;
-    #endif
-
-    half3 ambientColor = 0;
-    #ifdef VERTEXLIGHT_ON
-    // Approximated illumination from non-important point lights
-    ambientColor.rgb = Shade4PointLights(
-        unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
-        unity_LightColor[0].rgb, unity_LightColor[1].rgb, unity_LightColor[2].rgb, unity_LightColor[3].rgb,
-        unity_4LightAtten0, positionWs, normalWs);
-    #endif
-    o.ambientColor.rgb = ShadeSHPerVertex(normalWs, ambientColor);
-
-    COMPUTE_LIGHT_COORDS(o)
-    OSP_TRANSFER_SHADOW(o, o.positionCs, o.positionWs)
-    OSP_TRANSFER_FOG(o,o.pos);
-
-    return o;
+    float2 transformedTexcoord = TRANSFORM_TEX(inputTexcoord, _FlipbookTexArray);
+    float2 scrolledTexcoord = transformedTexcoord + _Time.y * _FlipbookScrollVelocity;
+    return GetFlipbookTexcoord(_FlipbookTexArray, scrolledTexcoord, _FlipbookFramesPerSecond, _FlipbookUseManualFrame, _FlipbookManualFrame);    
 }
 
-fixed4 FragmentForwardBase(VertexOutputBase i) : SV_Target
+float4 BlendFlipbook(float4 color, float4 uv1)
 {
-    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+    float4 flipbookColor = UNITY_SAMPLE_TEX2DARRAY(_FlipbookTexArray, float3(uv1.xy, floor(uv1.z)));
 
-    #if defined(USE_PIXEL_SHARPEN)
-    i.uv0.xy = SharpenPixelUv(i.uv0.xy, _MainTex_TexelSize);
-    #endif // USE_PIXEL_SHARPEN
-
-    float3 positionWs = i.positionWs.xyz;
-    float3 viewDirectionWs = -normalize(i.viewDirectionWs.xyz);
-
-    #if USE_NORMAL_MAP
-    half3 tangent = i.tangentToWorldAndPackedData[0].xyz;
-    half3 binormal = i.tangentToWorldAndPackedData[1].xyz;
-    half3 normal = i.tangentToWorldAndPackedData[2].xyz;
-    half3 normalTs = UnpackScaleNormal(UNITY_SAMPLE_TEX2D(_BumpMap, i.uv0), _BumpScale);
-    float3 normalWs = normalize(tangent * normalTs.x + binormal * normalTs.y + normal * normalTs.z);
-    #else
-    float3 normalWs = normalize(i.tangentToWorldAndPackedData[2].xyz);
-    #endif // USE_NORMAL_MAP
-
-    fixed4 baseColor = UNITY_SAMPLE_TEX2D(_MainTex, i.uv0) * _Color;
-    float3 albedo = baseColor.rgb;
-    float smoothness = _Glossiness * baseColor.a;
-
-    half oneMinusReflectivity;
-    half3 specularColor;
-    half3 diffuseColor = DiffuseAndSpecularFromMetallic(albedo, _Metallic, specularColor, oneMinusReflectivity);
-    
-    UnityLight mainLight;
-    mainLight.color = _LightColor0.rgb;
-    mainLight.dir = _WorldSpaceLightPos0.xyz;
-    UNITY_LIGHT_ATTENUATION(atten, i, positionWs);
-    mainLight.color *= atten;
-    
-    UnityIndirect indirectLight;
-    indirectLight.diffuse = ShadeSHPerPixel(normalWs, i.ambientColor, positionWs);
-    
-    // Only uses the nearest reflection probe.
-    Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(smoothness, viewDirectionWs, normalWs, specularColor);
-    indirectLight.specular = Unity_GlossyEnvironment(UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, g);
-    
-    fixed4 color = UNITY_BRDF_PBS(diffuseColor, specularColor, oneMinusReflectivity, smoothness, normalWs, viewDirectionWs, mainLight, indirectLight);
-    color.a = baseColor.a;
-
-    #ifdef USE_EMISSION_MAP
-    color.rgb += UNITY_SAMPLE_TEX2D(_EmissionMap, i.uv0).rgb * _EmissionColor.rgb;
-    #endif // USE_EMISSION_MAP
-
-    #ifdef USE_ALPHA_TEST
-    clip(color.a - _AlphaCutoff);
+    #if defined(USE_FLIPBOOK_SMOOTHING)
+    float4 flipbookColor2 = UNITY_SAMPLE_TEX2DARRAY(_FlipbookTexArray, uv1.xyw);
+    flipbookColor = lerp(flipbookColor, flipbookColor2, frac(uv1.z));
     #endif
-
-    OSP_APPLY_FOG(i.fogCoord, color);
-
-    return color;
+    
+    return BlendColor(_FlipbookTint * flipbookColor, color, _FlipbookBlendMode);
 }
 
-VertexOutputAdd VertexForwardAdd(VertexInput v)
+// Forward Base Pass...............................................................................
+
+struct VertexInput
 {
-    VertexOutputAdd o;
+    float4 vertex : POSITION;
+    float3 normal : NORMAL;
+    fixed4 color : COLOR;
+    float2 uv0 : TEXCOORD0;
+    #if defined(USE_NORMAL_MAP)
+    float4 tangent : TANGENT;
+    #endif
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+};
+
+struct VertexOutput
+{
+    float4 positionCs : SV_POSITION;
+    float2 uv0 : TEXCOORD0;
+    float4 uv1 : TEXCOORD1;
+    float3 positionWs : TEXCOORD2;
+    float3 viewDirectionWs : TEXCOORD3;
+    float4 tangentToWorldAndLightDir[3] : TEXCOORD4; // [3x3:tangentToWorld | 1x3:lightDir]
+    half4 ambientColor : TEXCOORD7;
+    OSP_SHADOW_COORDS(8)
+    DECLARE_LIGHT_COORDS(9)
+    OSP_FOG_COORDS(10)
+    fixed4 color : COLOR;
+    UNITY_VERTEX_OUTPUT_STEREO
+};
+
+VertexOutput VertexForward(VertexInput v)
+{
+    VertexOutput o;
 
     UNITY_SETUP_INSTANCE_ID(v);
-    UNITY_INITIALIZE_OUTPUT(VertexOutputAdd, o);
+    UNITY_INITIALIZE_OUTPUT(VertexOutput, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+    float2 scale = _Scale;
+    #ifdef FLIP_FACING_HORIZONTAL
+    float3 viewDirectionWs = unity_ObjectToWorld._m03_m13_m23 - GetCenterCameraPosition();
+    scale = FlipFacingHorizontal(scale, viewDirectionWs);
+    #endif
+
+    #if defined(SPRITE_RENDERER_ON)
+    scale *= _Flip;
+    #endif
+
     float4 positionOs = v.vertex;
-    positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, _Scale);
+    positionOs.xy = Transform2d(positionOs.xy, _Position, _RotationRoll, scale);
 
     float3 normalWs;
     float3 positionWs;
@@ -255,13 +200,40 @@ VertexOutputAdd VertexForwardAdd(VertexInput v)
     o.tangentToWorldAndLightDir[0].w = lightDir.x;
     o.tangentToWorldAndLightDir[1].w = lightDir.y;
     o.tangentToWorldAndLightDir[2].w = lightDir.z;
+    
+    #ifdef UNITY_PASS_FORWARDBASE
+    half3 ambientColor = 0;
+        #ifdef VERTEXLIGHT_ON
+        // Approximated illumination from non-important point lights
+        ambientColor.rgb = Shade4PointLights(
+            unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+            unity_LightColor[0].rgb, unity_LightColor[1].rgb, unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+            unity_4LightAtten0, positionWs, normalWs);
+        #endif
+    o.ambientColor.rgb = ShadeSHPerVertex(normalWs, ambientColor);
+    #endif
+    
+    #if defined(USE_FLIPBOOK)
+    o.uv1 = TransferFlipbook(v.uv0);
+    #endif
 
+    fixed4 color = _Color * v.color;
+    #if defined(SPRITE_RENDERER_ON)
+    color *= fixed4(GammaToLinearSpace(_RendererColor.rgb), _RendererColor.a);
+    #endif
+    o.color = color;
+
+    #ifdef UNITY_PASS_FORWARDBASE
+    COMPUTE_LIGHT_COORDS(o)
+    OSP_TRANSFER_FOG(o,o.pos);
+    #endif
+    
     OSP_TRANSFER_SHADOW(o, o.positionCs, o.positionWs)
-
+    
     return o;
 }
 
-fixed4 FragmentForwardAdd(VertexOutputAdd i) : SV_Target
+fixed4 FragmentForward(VertexOutput i) : SV_Target
 {
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
@@ -282,7 +254,11 @@ fixed4 FragmentForwardAdd(VertexOutputAdd i) : SV_Target
     float3 normalWs = normalize(i.tangentToWorldAndLightDir[2].xyz);
     #endif // USE_NORMAL_MAP
 
-    fixed4 baseColor = UNITY_SAMPLE_TEX2D(_MainTex, i.uv0) * _Color;
+    fixed4 baseColor = UNITY_SAMPLE_TEX2D(_MainTex, i.uv0) * i.color;
+    #ifdef USE_FLIPBOOK
+    baseColor = BlendFlipbook(baseColor, i.uv1);
+    #endif
+    
     float3 albedo = baseColor.rgb;
     float smoothness = _Glossiness * baseColor.a;
 
@@ -303,11 +279,27 @@ fixed4 FragmentForwardAdd(VertexOutputAdd i) : SV_Target
     indirectLight.diffuse = 0;
     indirectLight.specular = 0;
 
+    #ifdef UNITY_PASS_FORWARDBASE
+    indirectLight.diffuse = ShadeSHPerPixel(normalWs, i.ambientColor, positionWs);
+    
+    // Only uses the nearest reflection probe.
+    Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(smoothness, viewDirectionWs, normalWs, specularColor);
+    indirectLight.specular = Unity_GlossyEnvironment(UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, g);
+    #endif
+
     fixed4 color = UNITY_BRDF_PBS(diffuseColor, specularColor, oneMinusReflectivity, smoothness, normalWs, viewDirectionWs, mainLight, indirectLight);
     color.a = baseColor.a;
+    
+    #if defined(UNITY_PASS_FORWARDBASE) && defined(USE_EMISSION_MAP)
+    color.rgb += UNITY_SAMPLE_TEX2D(_EmissionMap, i.uv0).rgb * _EmissionColor.rgb;
+    #endif // USE_EMISSION_MAP
 
     #ifdef USE_ALPHA_TEST
     clip(color.a - _AlphaCutoff);
+    #endif
+
+    #if defined(UNITY_PASS_FORWARDBASE)
+    OSP_APPLY_FOG(i.fogCoord, color);
     #endif
 
     return color;

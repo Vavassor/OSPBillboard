@@ -1,12 +1,14 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace OrchidSeal.Billboard.Editor
 {
     public class BaseBillboardEditor : ShaderGUI
     {
-        protected bool showStencilOptions;
+        private bool showStencilOptions;
         private bool showTransformationOptions = true;
+        protected bool showFlipbookOptions;
         
         private static readonly int s_ButtonLinkHash = nameof(s_ButtonLinkHash).GetHashCode();
         
@@ -56,6 +58,17 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent keepConstantScalingLabel = new ("Constant with Screen Size");
             public static readonly GUIContent constantScaleLabel = new ("Constant Scale");
             public static readonly GUIContent flipFacingHorizontalLabel = new("Flip Facing Horizontal", "Flip the billboard when its local X axis faces left or right.");
+            
+            // Flipbook option labels
+            public const string flipbookFoldoutLabel = "Flipbook";
+            public static readonly GUIContent flipbookLabel = new ("Flipbook");
+            public static readonly GUIContent flipbookEditorButtonLabel = new ("Create Flipbooks");
+            public static readonly GUIContent flipbookScrollVelocityLabel = new ("Scroll Velocity");
+            public static readonly GUIContent flipbookBlendModeLabel = new ("Blend Mode");
+            public static readonly GUIContent flipbookFramesPerSecondLabel = new ("Frames Per Second");
+            public static readonly GUIContent useFlipbookSmoothingLabel = new ("Smoothing");
+            public static readonly GUIContent flipbookUseManualFrameLabel = new ("Control Frame Manually");
+            public static readonly GUIContent flipbookManualFrameLabel = new ("Manual Frame");
             
             // Stencil
             public const string stencilFoldoutLabel = "Stencil";
@@ -147,6 +160,44 @@ namespace OrchidSeal.Billboard.Editor
                     EditorGUI.EndDisabledGroup();    
                 }
                 
+                EditorGUILayout.EndVertical();
+            }
+        }
+        
+        protected void FlipbookOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
+        {
+            var flipbookOnKeyword = new LocalKeyword(material.shader, "USE_FLIPBOOK");
+            
+            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.flipbookFoldoutLabel, ref showFlipbookOptions, material, flipbookOnKeyword))
+            {
+                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
+                
+                var flipbookProperty = FindProperty("_FlipbookTexArray", properties);
+                var flipbookUseManualFrameProperty = FindProperty("_FlipbookUseManualFrame", properties);
+                var flipbookManualFrameProperty = FindProperty("_FlipbookManualFrame", properties);
+
+                EditorGUILayout.Space();
+                if (GUILayout.Button(Styles.flipbookEditorButtonLabel, GUILayout.Width(120)))
+                {
+                    FlipbookCreatorEditor.ShowWindow();
+                }
+
+                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(flipbookOnKeyword));
+                materialEditor.TexturePropertySingleLine(Styles.flipbookLabel, flipbookProperty, FindProperty("_FlipbookTint", properties));
+                materialEditor.TextureScaleOffsetProperty(flipbookProperty);
+                ShaderGuiUtility.Vector2Property(FindProperty("_FlipbookScrollVelocity", properties), Styles.flipbookScrollVelocityLabel);
+                materialEditor.ShaderProperty(FindProperty("_FlipbookBlendMode", properties), Styles.flipbookBlendModeLabel);
+                materialEditor.ShaderProperty(FindProperty("_FlipbookFramesPerSecond", properties), Styles.flipbookFramesPerSecondLabel);
+                materialEditor.ShaderProperty(FindProperty("_UseFlipbookSmoothing", properties), Styles.useFlipbookSmoothingLabel);
+
+                materialEditor.ShaderProperty(flipbookUseManualFrameProperty, Styles.flipbookUseManualFrameLabel);
+                if (flipbookUseManualFrameProperty.floatValue > 0.0f)
+                {
+                    materialEditor.ShaderProperty(flipbookManualFrameProperty, Styles.flipbookManualFrameLabel);
+                }
+
+                EditorGUI.EndDisabledGroup();
+
                 EditorGUILayout.EndVertical();
             }
         }

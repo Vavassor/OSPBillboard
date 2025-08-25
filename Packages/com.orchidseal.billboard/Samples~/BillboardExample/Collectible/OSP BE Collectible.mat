@@ -7,16 +7,16 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: OSP BE Blackberry
-  m_Shader: {fileID: 4800000, guid: 3d40f65f368b6364e8349553a248f195, type: 3}
+  m_Name: OSP BE Collectible
+  m_Shader: {fileID: 4800000, guid: 600f02c539c567844b957cbd6548a162, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - USE_NON_UNIFORM_SCALE
   - USE_VERTEX_ANIMATION
   - _BILLBOARD_MODE_SPHERICAL
   - _COLORMODE_MULTIPLY
   m_InvalidKeywords:
+  - CAST_TRANSPARENT_SHADOWS
   - _FLOATON_ON
   - _RANDOMIZEANIMWORLDPOSITION_ON
   m_LightmapFlags: 4
@@ -26,7 +26,7 @@ Material:
   stringTagMap:
     RenderType: Transparent
   disabledShaderPasses: []
-  m_LockedProperties: _OutlineColor
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -55,7 +55,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 78cb1cc3d8d75c549819d4dc9406c483, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -127,17 +127,19 @@ Material:
     - _UseAlphaTest: 0
     - _UseFlipbookSmoothing: 0
     - _UseGammaSpace: 0
-    - _UseNonUniformScale: 1
+    - _UseNonUniformScale: 0
     - _UsePixelSharpen: 0
     - _ZTest: 4
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _FlipbookScrollVelocity: {r: 0, g: 0, b: 0, a: 0}
     - _FlipbookTint: {r: 1, g: 1, b: 1, a: 1}
     - _FloatAxis: {r: 0, g: 1, b: 0, a: 0}
     - _OutlineColor: {r: 1, g: 1, b: 1, a: 1}
     - _Position: {r: 0, g: 0, b: 0, a: 0}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _Scale: {r: 1, g: 1, b: 0, a: 0}
   m_BuildTextureStacks: []

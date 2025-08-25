@@ -1,4 +1,4 @@
-Shader "Orchid Seal/OSP Billboard/Lit Billboard"
+Shader "Orchid Seal/OSP Billboard/Lit Sprite"
 {
     Properties
     {
@@ -6,7 +6,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
         [Toggle(USE_PIXEL_SHARPEN)] _UsePixelSharpen("Sharp Pixels", Float) = 0
         
         _Color ("Tint", Color) = (1,1,1,1)
-        _MainTex ("Albedo (RGB)", 2D) = "white" {}
+        [PerRendererData] _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Glossiness ("Smoothness", Range(0,1)) = 0.5
         [Gamma] _Metallic ("Metallic", Range(0,1)) = 0.0
         
@@ -49,24 +49,26 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilPass("Pass", Float) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilFail("Fail", Float) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilZFail("ZFail", Float) = 0
+        
+        [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
+        [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
     }
     SubShader
     {
         Tags
         {
-            "Queue" = "Transparent"
-            "IgnoreProjector" = "True"
-            "RenderType" = "Transparent"
+            "CanUseSpriteAtlas" = "True"
             "DisableBatching" = "True"
+            "IgnoreProjector" = "True"
             "PreviewType" = "Plane"
+            "Queue" = "Transparent"
+            "RenderType" = "Transparent"
         }
         
+        AlphaToMask [_AlphaToMask]
         Blend [_BlendSrc] [_BlendDst]
         BlendOp [_BlendOp]
-        ZTest [_ZTest]
-        ZWrite [_ZWrite]
         Cull Off
-        AlphaToMask [_AlphaToMask]
         Stencil
         {
             Ref [_StencilRef]
@@ -77,6 +79,8 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             Fail [_StencilFail]
             ZFail [_StencilZFail]
         }
+        ZTest [_ZTest]
+        ZWrite [_ZWrite]
         
         Pass
         {
@@ -99,6 +103,7 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             #pragma multi_compile_instancing
             #pragma vertex vertShadowCaster
             #pragma fragment fragShadowCaster
+            #define SPRITE_RENDERER_ON
             #include "Lit Billboard Shadow Caster.cginc"
             ENDCG
         }
@@ -125,6 +130,8 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             
             #pragma vertex VertexForward
             #pragma fragment FragmentForward
+
+            #define SPRITE_RENDERER_ON
             #include "Lit Billboard Forward.cginc"
             ENDCG
         }
@@ -154,6 +161,8 @@ Shader "Orchid Seal/OSP Billboard/Lit Billboard"
             
             #pragma vertex VertexForward
             #pragma fragment FragmentForward
+
+            #define SPRITE_RENDERER_ON
             #include "Lit Billboard Forward.cginc"
             ENDCG
         }

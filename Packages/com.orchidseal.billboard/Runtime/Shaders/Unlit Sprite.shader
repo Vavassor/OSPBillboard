@@ -1,14 +1,8 @@
-// Billboards are a flat image or sprite that always face the camera.
-// 
-// Put the material on Unity's Quad mesh. And enable GPU instancing on the material, because this shader
-// disables batching! Billboarding uses the object pivot, but batching combines meshes so they all have one pivot.
-// 
-// This shader is for Unity's built in render pipeline.
-Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
+Shader "Orchid Seal/OSP Billboard/Unlit Sprite"
 {
     Properties
     {
-        _MainTex("Texture", 2D) = "white" {}
+        [PerRendererData] _MainTex("Texture", 2D) = "white" {}
         _Color("Tint", Color) = (1, 1, 1, 1)
         [KeywordEnum(Multiply, Overlay)] _ColorMode("Tint Color Mode", Float) = 0
         [HideInInspector] [Enum(Opaque,0,Cutout,1,Transparent,2,Premultiply,3,Additive,4,Custom,5)] _RenderMode("Render Mode", Int) = 2
@@ -49,11 +43,6 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         _FloatFrequency("Float Frequency", Float) = 3
         _FloatPhase("Float Phase", Float) = 0
         
-        // [Toggle(SPIN_ON)] _SpinOn("Spin Enabled", Float) = 0
-        // _SpinAxis("Spin Axis", Vector) = (0, 1, 0, 0)
-        // _SpinPhase("Spin Phase", Float) = 0
-        // _SpinSpeed("Spin Speed", Float) = 1
-        
         [Toggle] _ThrobOn("Throb Enabled", Float) = 0
         _ThrobAmplitude("Throb Amplitude", Float) = 0.15
         _ThrobFrequency("Throb Frequency", Float) = 5
@@ -77,24 +66,26 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilPass("Pass", Float) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilFail("Fail", Float) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilZFail("ZFail", Float) = 0
+        
+        [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
+        [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
     }
     SubShader
     {
         Tags
         {
-            "Queue" = "Transparent"
-            "IgnoreProjector" = "True"
-            "RenderType" = "Transparent"
+            "CanUseSpriteAtlas" = "True"
             "DisableBatching" = "True"
+            "IgnoreProjector" = "True"
             "PreviewType" = "Plane"
+            "Queue" = "Transparent"
+            "RenderType" = "Transparent"
         }
-
+        
+        AlphaToMask [_AlphaToMask]
         Blend [_BlendSrc] [_BlendDst]
         BlendOp [_BlendOp]
-        ZTest [_ZTest]
-        ZWrite [_ZWrite]
         Cull Off
-        AlphaToMask [_AlphaToMask]
         Stencil
         {
             Ref [_StencilRef]
@@ -105,7 +96,9 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             Fail [_StencilFail]
             ZFail [_StencilZFail]
         }
-
+        ZTest [_ZTest]
+        ZWrite [_ZWrite]
+        
         Pass
         {
             CGPROGRAM
@@ -126,6 +119,7 @@ Shader "Orchid Seal/OSP Billboard/Unlit Billboard"
             #pragma shader_feature_local USE_PIXEL_SHARPEN
             #pragma shader_feature_local FLIP_FACING_HORIZONTAL
             #pragma shader_feature_local USE_VERTEX_ANIMATION
+            #define SPRITE_RENDERER_ON
             #include "Unlit Billboard.cginc"
             ENDCG
         }

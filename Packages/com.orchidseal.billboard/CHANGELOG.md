@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.0
+
+- Adds lit and unlit sprite shaders.
+- Fixes aliasing on text that's constant with screen size.
+- Adds flipbooks to the lit shader.
+- Adds flip facing horizontal option to the lit shader.
+
 ## v0.5.0
 
 Released March 29, 2025.

@@ -377,8 +377,8 @@ Shader "Orchid Seal/OSP Billboard/Distance Field Billboard"
         #endif
             
         #if KEEP_CONSTANT_SCALING
-            float pixelConstantScale = centerViewDistanceWs / unity_CameraProjection._m11;
-            scaleOs *= _ConstantScale * pixelConstantScale;
+            float pixelConstantScale = _ConstantScale * centerViewDistanceWs / unity_CameraProjection._m11;
+            scaleOs *= pixelConstantScale;
             #if defined(USING_STEREO_MATRICES)
                 scaleOs *= 0.25; // Arbitrary scale factor. Just felt too large in VR? -Vavassor
             #endif

@@ -43,17 +43,6 @@ namespace OrchidSeal.Billboard.Editor
             public static readonly GUIContent tintColorModeLabel = new ("Tint Color Mode");
             public static readonly GUIContent usePixelSharpenLabel = new("Sharp Pixels", "Blocky pixels with smooth edges. Set filtering on textures to Bilinear or Trilinear when using this.");
             
-            // Flipbook option labels
-            public const string flipbookFoldoutLabel = "Flipbook";
-            public static readonly GUIContent flipbookLabel = new ("Flipbook");
-            public static readonly GUIContent flipbookEditorButtonLabel = new ("Create Flipbooks");
-            public static readonly GUIContent flipbookScrollVelocityLabel = new ("Scroll Velocity");
-            public static readonly GUIContent flipbookBlendModeLabel = new ("Blend Mode");
-            public static readonly GUIContent flipbookFramesPerSecondLabel = new ("Frames Per Second");
-            public static readonly GUIContent useFlipbookSmoothingLabel = new ("Smoothing");
-            public static readonly GUIContent flipbookUseManualFrameLabel = new ("Control Frame Manually");
-            public static readonly GUIContent flipbookManualFrameLabel = new ("Manual Frame");
-            
             // Outline option labels
             public const string outlineFoldoutLabel = "Outline";
             public static readonly GUIContent outlineColorLabel = new ("Color");
@@ -83,10 +72,14 @@ namespace OrchidSeal.Billboard.Editor
         private bool shouldApplyDefaults = true;
         private bool showRenderOptions = true;
         private bool showBaseOptions = true;
-        private bool showFlipbookOptions = true;
         private bool showOutlineOptions;
         private bool showDistanceFadeOptions;
         private bool showVertexAnimationOptions;
+
+        public BillboardEditor()
+        {
+            showFlipbookOptions = true;
+        }
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -267,46 +260,6 @@ namespace OrchidSeal.Billboard.Editor
                 materialEditor.TexturePropertySingleLine(Styles.baseTextureLabel, baseTextureProperty, FindProperty("_Color", properties));
                 materialEditor.ShaderProperty(FindProperty("_ColorMode", properties), Styles.tintColorModeLabel);
                 materialEditor.TextureScaleOffsetProperty(baseTextureProperty);
-                EditorGUILayout.EndVertical();
-            }
-        }
-        
-        // Flipbook................................................................................
-        
-        private void FlipbookOptions(MaterialEditor materialEditor, MaterialProperty[] properties, Material material)
-        {
-            var flipbookOnKeyword = new LocalKeyword(material.shader, "USE_FLIPBOOK");
-            
-            if (ShaderGuiUtility.MaterialKeywordFoldout(Styles.flipbookFoldoutLabel, ref showFlipbookOptions, material, flipbookOnKeyword))
-            {
-                EditorGUILayout.BeginVertical(Styles.sectionVerticalLayout);
-                
-                var flipbookProperty = FindProperty("_FlipbookTexArray", properties);
-                var flipbookUseManualFrameProperty = FindProperty("_FlipbookUseManualFrame", properties);
-                var flipbookManualFrameProperty = FindProperty("_FlipbookManualFrame", properties);
-
-                EditorGUILayout.Space();
-                if (GUILayout.Button(Styles.flipbookEditorButtonLabel, GUILayout.Width(120)))
-                {
-                    FlipbookCreatorEditor.ShowWindow();
-                }
-
-                EditorGUI.BeginDisabledGroup(!material.IsKeywordEnabled(flipbookOnKeyword));
-                materialEditor.TexturePropertySingleLine(Styles.flipbookLabel, flipbookProperty, FindProperty("_FlipbookTint", properties));
-                materialEditor.TextureScaleOffsetProperty(flipbookProperty);
-                ShaderGuiUtility.Vector2Property(FindProperty("_FlipbookScrollVelocity", properties), Styles.flipbookScrollVelocityLabel);
-                materialEditor.ShaderProperty(FindProperty("_FlipbookBlendMode", properties), Styles.flipbookBlendModeLabel);
-                materialEditor.ShaderProperty(FindProperty("_FlipbookFramesPerSecond", properties), Styles.flipbookFramesPerSecondLabel);
-                materialEditor.ShaderProperty(FindProperty("_UseFlipbookSmoothing", properties), Styles.useFlipbookSmoothingLabel);
-
-                materialEditor.ShaderProperty(flipbookUseManualFrameProperty, Styles.flipbookUseManualFrameLabel);
-                if (flipbookUseManualFrameProperty.floatValue > 0.0f)
-                {
-                    materialEditor.ShaderProperty(flipbookManualFrameProperty, Styles.flipbookManualFrameLabel);
-                }
-
-                EditorGUI.EndDisabledGroup();
-
                 EditorGUILayout.EndVertical();
             }
         }

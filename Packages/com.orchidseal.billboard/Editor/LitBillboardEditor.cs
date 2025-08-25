@@ -71,6 +71,7 @@ namespace OrchidSeal.Billboard.Editor
             BaseOptions(materialEditor, properties, targetMaterial);
             EmissionOptions(materialEditor, properties, targetMaterial);
             TransformationOptions(materialEditor, properties);
+            FlipbookOptions(materialEditor, properties, targetMaterial);
             StencilOptions(materialEditor, properties);
             
             materialEditor.EnableInstancingField();
